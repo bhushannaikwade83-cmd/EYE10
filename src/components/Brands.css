@@ -216,7 +216,37 @@
   transform: translateY(-2px) scale(1.02);
 }
 
+.brands-catalogue-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: -32px auto 48px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 0 12px;
+}
+
+.brands-catalogue-btn {
+  width: 100%;
+  max-width: 360px;
+  justify-content: center;
+}
+
+.brands-catalogue-hint {
+  margin: 0;
+  font-size: 14px;
+  color: var(--gray-dark);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
 @media (max-width: 768px) {
+  .brands-catalogue-cta {
+    margin: -24px auto 36px;
+  }
+
   .brands-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }

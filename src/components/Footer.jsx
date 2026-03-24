@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube, Clock } from 'lucide-react'
+import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube, Clock, FileDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import logoImage from '../assets/eye10-logo.png'
 import { useSiteContent } from '../context/SiteContentContext'
@@ -9,6 +9,8 @@ function Footer() {
   const footerPhone = content?.footer?.phone || '+91 99999 99999'
   const footerEmail = content?.footer?.email || 'info@eye10.com'
   const footerAddress = content?.footer?.address || '123 Main Street, City, State - 123456, India'
+  const catalogueUrl = (content?.catalogue?.pdfUrl || '').trim()
+  const catalogueLabel = (content?.catalogue?.title || 'Product catalogue').trim() || 'Product catalogue'
 
   return (
     <footer className="footer">
@@ -45,6 +47,14 @@ function Footer() {
               <li><Link to="/products">Products</Link></li>
               <li><Link to="/contact">Contact</Link></li>
               <li><a href="#about">About Us</a></li>
+              {catalogueUrl ? (
+                <li>
+                  <a href={catalogueUrl} target="_blank" rel="noopener noreferrer" className="footer-catalogue-link">
+                    <FileDown size={16} aria-hidden />
+                    {catalogueLabel}
+                  </a>
+                </li>
+              ) : null}
             </ul>
           </div>
 

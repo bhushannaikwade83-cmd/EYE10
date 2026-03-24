@@ -4,13 +4,13 @@
   position: relative;
 }
 
-.section-title-wrapper {
+.recently-viewed-section .section-title-wrapper {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.section-icon {
+.recently-viewed-section .section-icon {
   color: var(--primary);
   animation: iconFloat 3s ease-in-out infinite;
 }

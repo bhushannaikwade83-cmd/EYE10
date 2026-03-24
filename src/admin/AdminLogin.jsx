@@ -4,6 +4,7 @@ import { auth, isFirebaseConfigured } from '../firebase/config'
 import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { isFirestoreAdmin } from '../utils/adminAccess'
+import './AdminLogin.css'
 
 function loginErrorMessage(error) {
   const code = error?.code
@@ -117,7 +118,7 @@ function AdminLogin() {
             admin email you created under Firebase Console → Authentication.
           </p>
           <p
-            className="review-hint"
+            className="review-hint admin-login-hint"
             style={{ marginBottom: '24px', fontSize: '0.9rem', color: 'var(--gray-dark)' }}
           >
             <strong>Password</strong> is stored only in Firebase <strong>Authentication</strong> (not

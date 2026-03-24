@@ -12,6 +12,8 @@ import { addToRecentlyViewed, addToWishlist, removeFromWishlist, isInWishlist } 
 import { addToComparison } from '../components/ProductComparison'
 import { addPriceAlert } from '../components/PriceDropAlerts'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
+import { getSampleProductById } from '../utils/sampleProducts'
+import { normalizeBenefitList, normalizeFeatureList } from '../utils/productDoc'
 import { useSiteContent } from '../context/SiteContentContext'
 import toast from 'react-hot-toast'
 import './ProductDetail.css'
@@ -30,7 +32,7 @@ function ProductDetail() {
   useEffect(() => {
     const fetchProduct = async () => {
       if (!db) {
-        const sampleProduct = getSampleProduct(id)
+        const sampleProduct = getSampleProductById(id)
         if (sampleProduct) setProduct(sampleProduct)
         setLoading(false)
         return
@@ -38,28 +40,25 @@ function ProductDetail() {
       try {
         const docRef = doc(db, 'products', id)
         const docSnap = await getDoc(docRef)
-        
+
         if (docSnap.exists()) {
           setProduct({ id: docSnap.id, ...docSnap.data() })
         } else {
-          // Fallback to sample data
-          const sampleProduct = getSampleProduct(id)
-          if (sampleProduct) {
-            setProduct(sampleProduct)
-          }
+          setProduct(null)
         }
       } catch (error) {
         console.error('Error fetching product:', error)
-        const sampleProduct = getSampleProduct(id)
-        if (sampleProduct) {
-          setProduct(sampleProduct)
-        }
+        setProduct(null)
       } finally {
         setLoading(false)
       }
     }
 
     fetchProduct()
+  }, [id])
+
+  useEffect(() => {
+    setSelectedImage(0)
   }, [id])
 
   useEffect(() => {
@@ -116,7 +115,19 @@ function ProductDetail() {
     )
   }
 
-  const images = product.images || [product.image || 'https://via.placeholder.com/600']
+  const imageList =
+    Array.isArray(product.images) && product.images.length > 0
+      ? product.images.filter(Boolean)
+      : [product.image].filter(Boolean)
+  const mainImage = imageList[0] || 'https://via.placeholder.com/600?text=EYE10'
+  const featureList = normalizeFeatureList(product)
+  const benefitList = normalizeBenefitList(product)
+  const rating =
+    typeof product.rating === 'number' && !Number.isNaN(product.rating) ? product.rating : null
+  const reviewCount =
+    product.reviewCount != null && product.reviewCount !== ''
+      ? Number(product.reviewCount)
+      : null
 
   return (
     <main>
@@ -130,7 +141,10 @@ function ProductDetail() {
           <div className="product-detail-layout">
             <div className="product-images">
               <div className="main-image">
-                <ImageZoom src={images[selectedImage]} alt={product.name} />
+                <ImageZoom
+                  src={imageList[selectedImage] ?? mainImage}
+                  alt={product.name}
+                />
                 <button
                   className="favorite-btn"
                   onClick={handleWishlistToggle}
@@ -139,9 +153,9 @@ function ProductDetail() {
                   <Heart size={24} fill={isFavorite ? 'currentColor' : 'none'} />
                 </button>
               </div>
-              {images.length > 1 && (
+              {imageList.length > 1 && (
                 <div className="image-thumbnails">
-                  {images.map((img, index) => (
+                  {imageList.map((img, index) => (
                     <img
                       key={index}
                       src={img}
@@ -160,10 +174,23 @@ function ProductDetail() {
                 <p className="product-brand">{product.brand || 'EYE10'}</p>
               </div>
 
-              <div className="product-rating">
-                <div className="stars">★★★★★</div>
-                <span>(4.5) • 120 Reviews</span>
-              </div>
+              {(rating != null || (reviewCount != null && !Number.isNaN(reviewCount))) && (
+                <div className="product-rating">
+                  {rating != null && (
+                    <div className="stars" aria-hidden>
+                      {'★'.repeat(Math.min(5, Math.max(0, Math.round(rating))))}
+                      {'☆'.repeat(Math.max(0, 5 - Math.min(5, Math.max(0, Math.round(rating)))))}
+                    </div>
+                  )}
+                  <span>
+                    {rating != null ? `(${rating.toFixed(1)})` : ''}
+                    {rating != null && reviewCount != null ? ' • ' : ''}
+                    {reviewCount != null && !Number.isNaN(reviewCount)
+                      ? `${reviewCount} Review${reviewCount === 1 ? '' : 's'}`
+                      : ''}
+                  </span>
+                </div>
+              )}
 
               <div className="product-price-section">
                 {product.originalPrice && (
@@ -175,23 +202,23 @@ function ProductDetail() {
                 )}
               </div>
 
-              <div className="product-description">
-                <h3>Description</h3>
-                <p>
-                  {product.description ||
-                    'Premium quality eyewear designed for comfort and style. Made with high-quality materials and featuring UV protection. Perfect for everyday wear.'}
-                </p>
-              </div>
+              {product.description ? (
+                <div className="product-description">
+                  <h3>Description</h3>
+                  <p>{product.description}</p>
+                </div>
+              ) : null}
 
-              <div className="product-features">
-                <h3>Features</h3>
-                <ul>
-                  <li>UV Protection</li>
-                  <li>Scratch Resistant</li>
-                  <li>Lightweight Design</li>
-                  <li>Premium Materials</li>
-                </ul>
-              </div>
+              {featureList.length > 0 ? (
+                <div className="product-features">
+                  <h3>Features</h3>
+                  <ul>
+                    {featureList.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
 
               <div className="product-specs">
                 <div className="spec-item">
@@ -201,7 +228,9 @@ function ProductDetail() {
                 <div className="spec-item">
                   <span className="spec-label">Category:</span>
                   <span className="spec-value">
-                    {product.category?.charAt(0).toUpperCase() + product.category?.slice(1)}
+                    {product.category
+                      ? product.category.charAt(0).toUpperCase() + product.category.slice(1)
+                      : '—'}
                   </span>
                 </div>
                 <div className="spec-item">
@@ -252,20 +281,16 @@ function ProductDetail() {
                 <ShareButtons product={product} url={window.location.href} />
               </div>
 
-              <div className="product-benefits">
-                <div className="benefit-item">
-                  <strong>Authentic Products</strong>
-                  <span>100% genuine eyewear</span>
+              {benefitList.length > 0 ? (
+                <div className="product-benefits">
+                  {benefitList.map((b, i) => (
+                    <div key={`${b.title}-${i}`} className="benefit-item">
+                      <strong>{b.title}</strong>
+                      {b.subtitle ? <span>{b.subtitle}</span> : null}
+                    </div>
+                  ))}
                 </div>
-                <div className="benefit-item">
-                  <strong>Expert Service</strong>
-                  <span>Professional assistance</span>
-                </div>
-                <div className="benefit-item">
-                  <strong>Warranty</strong>
-                  <span>1 year manufacturer warranty</span>
-                </div>
-              </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -276,122 +301,6 @@ function ProductDetail() {
       <RelatedProducts currentProduct={product} />
     </main>
   )
-}
-
-function getSampleProduct(id) {
-  const sampleProducts = {
-    '1': {
-      id: '1',
-      name: 'Classic Aviator Sunglasses',
-      price: 2999,
-      originalPrice: 3999,
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500',
-      category: 'sunglasses',
-      brand: 'EYE10',
-      discount: 25,
-      frameType: 'Full Rim',
-      description: 'Timeless aviator design with UV protection and premium metal frame. Perfect for everyday wear.',
-    },
-    '2': {
-      id: '2',
-      name: 'Round Frame Glasses',
-      price: 2499,
-      originalPrice: 2999,
-      image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500',
-      category: 'glasses',
-      brand: 'EYE10',
-      discount: 17,
-      frameType: 'Full Rim',
-      description: 'Vintage-inspired round frames perfect for a classic look. Lightweight and comfortable.',
-    },
-    '3': {
-      id: '3',
-      name: 'Cat Eye Sunglasses',
-      price: 3499,
-      image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500',
-      category: 'sunglasses',
-      brand: 'Ray-Ban',
-      frameType: 'Full Rim',
-      description: 'Elegant cat-eye design with polarized lenses and stylish frame. A fashion-forward choice.',
-    },
-    '4': {
-      id: '4',
-      name: 'Square Frame Glasses',
-      price: 2199,
-      image: 'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=500',
-      category: 'glasses',
-      brand: 'EYE10',
-      frameType: 'Full Rim',
-      description: 'Modern square frames with anti-glare coating and lightweight design.',
-    },
-    '5': {
-      id: '5',
-      name: 'Wayfarer Sunglasses',
-      price: 2799,
-      originalPrice: 3499,
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500',
-      category: 'sunglasses',
-      brand: 'Oakley',
-      discount: 20,
-      frameType: 'Full Rim',
-      description: 'Iconic wayfarer style with durable acetate frame and UV400 protection.',
-    },
-    '6': {
-      id: '6',
-      name: 'Oval Frame Glasses',
-      price: 2299,
-      image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500',
-      category: 'glasses',
-      brand: 'EYE10',
-      frameType: 'Full Rim',
-      description: 'Comfortable oval frames with blue light filter technology.',
-    },
-    '7': {
-      id: '7',
-      name: 'Rimless Glasses',
-      price: 1899,
-      originalPrice: 2499,
-      image: 'https://images.unsplash.com/photo-1524594152303-9fd13543fe6e?w=500',
-      category: 'glasses',
-      brand: 'Gucci',
-      discount: 24,
-      frameType: 'Rimless',
-      description: 'Ultra-lightweight rimless design for maximum comfort and style.',
-    },
-    '8': {
-      id: '8',
-      name: 'Sport Sunglasses',
-      price: 4499,
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500',
-      category: 'sunglasses',
-      brand: 'Oakley',
-      frameType: 'Full Rim',
-      description: 'High-performance sports sunglasses with impact-resistant lenses.',
-    },
-    '9': {
-      id: '9',
-      name: 'Browline Glasses',
-      price: 2699,
-      originalPrice: 3299,
-      image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=500',
-      category: 'glasses',
-      brand: 'Prada',
-      discount: 18,
-      frameType: 'Browline',
-      description: 'Sophisticated browline frames combining metal and acetate materials.',
-    },
-    '10': {
-      id: '10',
-      name: 'Oversized Sunglasses',
-      price: 3799,
-      image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500',
-      category: 'sunglasses',
-      brand: 'Versace',
-      frameType: 'Full Rim',
-      description: 'Luxury oversized sunglasses with gradient lenses and designer frame.',
-    },
-  }
-  return sampleProducts[id]
 }
 
 export default ProductDetail

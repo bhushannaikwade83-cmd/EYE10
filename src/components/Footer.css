@@ -285,6 +285,12 @@
   padding: 4px 0;
 }
 
+.footer-catalogue-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
 .footer-links li a::before {
   content: '';
   position: absolute;

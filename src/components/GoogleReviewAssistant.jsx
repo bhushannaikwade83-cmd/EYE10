@@ -322,10 +322,11 @@ function GoogleReviewAssistant() {
                     key={option.label}
                     className="coupon-wheel-label"
                     style={{
-                      transform: `rotate(${index * (360 / couponOptions.length)}deg)`,
+                      '--label-angle': `${index * (360 / couponOptions.length)}deg`,
+                      transform: `rotate(${index * (360 / couponOptions.length)}deg) translateX(76px) translateY(-50%)`,
                     }}
                   >
-                    {option.label}
+                    <span className="coupon-wheel-label-text">{option.label}</span>
                   </span>
                 ))}
               </div>

@@ -8,9 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "firebase:login": "firebase login",
-    "firebase:deploy": "firebase deploy --only firestore",
+    "firebase:deploy": "firebase deploy --only firestore,storage",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules",
-    "firebase:deploy:indexes": "firebase deploy --only firestore:indexes"
+    "firebase:deploy:indexes": "firebase deploy --only firestore:indexes",
+    "firebase:deploy:storage": "firebase deploy --only storage"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

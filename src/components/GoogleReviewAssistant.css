@@ -147,10 +147,11 @@
 
 .coupon-wheel-pointer {
   text-align: center;
-  color: var(--danger);
-  font-size: 24px;
+  color: var(--dark);
+  font-size: 26px;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-weight: 800;
 }
 
 .coupon-wheel {
@@ -169,12 +170,41 @@
   left: 50%;
   top: 50%;
   transform-origin: 0 0;
-  width: 44%;
-  text-align: right;
+  width: 94px;
+  margin-top: -12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.coupon-wheel-label-text {
+  display: block;
   font-size: 12px;
-  font-weight: 700;
-  color: var(--dark);
-  padding-right: 6px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #111827;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  transform: rotate(calc(-1 * var(--label-angle)));
+}
+
+@media (max-width: 520px) {
+  .coupon-wheel-wrap {
+    width: 240px;
+  }
+
+  .coupon-wheel {
+    width: 240px;
+    height: 240px;
+  }
+
+  .coupon-wheel-label {
+    width: 80px;
+    margin-top: -11px;
+  }
+
+  .coupon-wheel-label-text {
+    font-size: 11px;
+  }
 }
 
 .coupon-actions {

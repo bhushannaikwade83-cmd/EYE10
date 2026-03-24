@@ -31,14 +31,20 @@
   pointer-events: none;
 }
 
-.section-title-wrapper {
+.testimonials-section .section-title-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   margin-bottom: 60px;
   position: relative;
   z-index: 1;
+  max-width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
 }
 
-.section-title-wrapper h2 {
+.testimonials-section .section-title-wrapper h2 {
   font-size: 48px;
   font-weight: 800;
   color: var(--dark);
@@ -48,9 +54,10 @@
   line-height: 1.2;
   position: relative;
   padding-bottom: 20px;
+  width: 100%;
 }
 
-.section-title-wrapper h2::before {
+.testimonials-section .section-title-wrapper h2::before {
   content: '';
   position: absolute;
   bottom: 0;
@@ -63,7 +70,7 @@
   box-shadow: 0 2px 8px rgb(var(--primary-rgb) / 0.25);
 }
 
-.section-title-wrapper h2::after {
+.testimonials-section .section-title-wrapper h2::after {
   content: '';
   position: absolute;
   bottom: -8px;
@@ -84,11 +91,17 @@
   animation: float 3s ease-in-out infinite;
 }
 
-.section-subtitle {
+.testimonials-section .section-subtitle {
   font-size: 18px;
   color: var(--gray);
   margin-top: 12px;
   font-weight: 400;
+  max-width: 36rem;
+  width: 100%;
+  line-height: 1.5;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .google-review-actions {
@@ -236,11 +249,27 @@
 }
 
 @media (max-width: 768px) {
+  .testimonials-section .section-title-wrapper h2 {
+    font-size: clamp(28px, 7vw, 40px);
+    letter-spacing: -1px;
+  }
+
+  .testimonials-section .section-subtitle {
+    font-size: 15px;
+    max-width: 100%;
+  }
+
+  .testimonials-section .quote-icon {
+    width: 44px;
+    height: 44px;
+  }
+
   .testimonials-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   
   .testimonial-card {
     padding: 24px;
+    min-width: 0;
   }
 }

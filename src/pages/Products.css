@@ -39,6 +39,33 @@
   font-family: var(--font-family);
 }
 
+.products-catalogue-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: -24px auto 32px;
+  padding: 16px 20px;
+  max-width: 720px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgb(var(--light-rgb) / 0.55);
+  text-align: center;
+}
+
+.products-catalogue-banner p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--gray-dark);
+  flex: 1 1 200px;
+}
+
+.products-catalogue-link {
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
 .filter-toggle {
   display: none;
 }
