@@ -1,0 +1,68 @@
+.dark-mode-toggle {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark-mode-toggle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s;
+}
+
+.dark-mode-toggle:hover::before {
+  width: 200px;
+  height: 200px;
+}
+
+.dark-mode-toggle:hover {
+  background: var(--gradient-primary);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 24px rgb(var(--primary-rgb) / 0.34);
+  border-color: rgb(var(--light-rgb) / 0.3);
+}
+
+.dark-mode-toggle:active {
+  transform: translateY(0) scale(1);
+}
+
+/* Dark mode styles */
+:root.dark-mode {
+  --dark: #f8fafc;
+  --light: #0f172a;
+  --light-gray: #1e293b;
+  --gray: #94a3b8;
+  --border: #334155;
+  --white: #0f172a;
+  --black: #ffffff;
+}
+
+:root.dark-mode body {
+  background: linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: var(--dark);
+}
+
+:root.dark-mode body::before {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgb(var(--primary-rgb) / 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgb(var(--accent-rgb) / 0.10) 0%, transparent 50%);
+}
+

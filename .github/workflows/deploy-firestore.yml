@@ -1,0 +1,32 @@
+# Pushes Firestore rules + indexes when these files change.
+# Add repo secret FIREBASE_CI_TOKEN: run locally → npx firebase login:ci
+name: Deploy Firestore rules and indexes
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-firestore.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Deploy Firestore (rules + indexes)
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
+        run: npx firebase deploy --only firestore --non-interactive

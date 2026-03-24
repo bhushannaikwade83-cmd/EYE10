@@ -1,0 +1,91 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+}
+
+main {
+  flex: 1;
+  padding-top: 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Add extra padding when breadcrumbs are present */
+body.has-breadcrumbs main {
+  padding-top: 155px;
+}
+
+.three-scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  perspective: 1200px;
+}
+
+.three-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(2px);
+  opacity: 0.45;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.orb-1 {
+  width: clamp(220px, 24vw, 420px);
+  height: clamp(220px, 24vw, 420px);
+  top: 12%;
+  left: -6%;
+  background: radial-gradient(circle at 30% 30%, rgb(var(--primary-light-rgb) / 0.7), rgb(var(--primary-rgb) / 0.08) 70%);
+  animation: float3dA 18s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: clamp(260px, 28vw, 520px);
+  height: clamp(260px, 28vw, 520px);
+  bottom: -8%;
+  right: -7%;
+  background: radial-gradient(circle at 50% 45%, rgb(var(--accent-rgb) / 0.42), rgb(var(--secondary-rgb) / 0.1) 72%);
+  animation: float3dB 24s ease-in-out infinite;
+}
+
+.orb-3 {
+  width: clamp(140px, 14vw, 260px);
+  height: clamp(140px, 14vw, 260px);
+  top: 58%;
+  left: 42%;
+  background: radial-gradient(circle at 35% 35%, rgb(var(--light-rgb) / 0.65), rgb(var(--primary-rgb) / 0.06) 74%);
+  animation: float3dC 16s ease-in-out infinite;
+}
+
+.three-grid {
+  position: absolute;
+  inset: -8%;
+  background-image:
+    linear-gradient(rgb(var(--primary-rgb) / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--primary-rgb) / 0.08) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: rotateX(65deg) translateY(38%);
+  transform-origin: center;
+  opacity: 0.2;
+}
+
+@keyframes float3dA {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(38px, -26px, 70px) rotate(10deg); }
+}
+
+@keyframes float3dB {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(-44px, -34px, 90px) rotate(-8deg); }
+}
+
+@keyframes float3dC {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(18px, -18px, 55px) scale(1.06); }
+}

@@ -1,0 +1,136 @@
+.privacy-consent {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-top: 2px solid var(--border);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 2000;
+  padding: 24px;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.privacy-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.privacy-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.privacy-text {
+  flex: 1;
+  min-width: 300px;
+}
+
+.privacy-text h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.privacy-text p {
+  margin: 0;
+  color: var(--gray-dark);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.privacy-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-accept {
+  padding: 12px 24px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-accept:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(var(--primary-rgb) / 0.34);
+}
+
+.btn-decline {
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--dark);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-decline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--light-gray);
+  border: none;
+  color: var(--gray);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.btn-close:hover {
+  background: var(--error);
+  color: var(--white);
+  transform: rotate(90deg);
+}
+
+@media (max-width: 768px) {
+  .privacy-consent {
+    padding: 20px;
+  }
+
+  .privacy-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .privacy-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-accept,
+  .btn-decline {
+    flex: 1;
+  }
+}
+

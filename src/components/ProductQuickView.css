@@ -1,0 +1,246 @@
+.quick-view-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.quick-view-modal {
+  background: var(--white);
+  border-radius: 24px;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.quick-view-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  color: var(--dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.quick-view-close:hover {
+  background: var(--error);
+  color: var(--white);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.quick-view-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  padding: 40px;
+}
+
+.quick-view-image {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--light-gray);
+}
+
+.quick-view-discount {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: var(--gradient-secondary);
+  color: var(--white);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  z-index: 5;
+}
+
+.quick-view-favorite {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: all 0.3s ease;
+}
+
+.quick-view-favorite:hover {
+  background: var(--accent);
+  color: var(--white);
+  transform: scale(1.1);
+}
+
+.quick-view-info h2 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--dark);
+}
+
+.quick-view-brand {
+  font-size: 18px;
+  color: var(--gray);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.quick-view-rating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.quick-view-rating .stars {
+  color: var(--primary-light);
+  font-size: 18px;
+}
+
+.quick-view-price {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.quick-view-price .current-price {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.quick-view-price .original-price {
+  font-size: 20px;
+  color: var(--gray);
+  text-decoration: line-through;
+}
+
+.quick-view-price .discount {
+  font-size: 16px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+.quick-view-description {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--gray-dark);
+  margin-bottom: 24px;
+}
+
+.quick-view-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--dark);
+}
+
+.feature-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--success);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.quick-view-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quick-view-actions .btn {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .quick-view-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px;
+  }
+
+  .quick-view-info h2 {
+    font-size: 24px;
+  }
+
+  .quick-view-actions {
+    flex-direction: column;
+  }
+
+  .quick-view-actions .btn {
+    width: 100%;
+  }
+}
+
+

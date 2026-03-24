@@ -1,0 +1,57 @@
+.event-banner {
+  background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+  color: var(--white);
+  border-bottom: 1px solid rgb(var(--light-rgb) / 0.22);
+}
+
+.event-banner-inner {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.event-banner-copy h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.25;
+  color: var(--white);
+}
+
+.event-banner-copy p {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: rgb(var(--light-rgb) / 0.95);
+}
+
+.event-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border: 1px solid rgb(var(--light-rgb) / 0.45);
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.event-banner-btn:hover {
+  background-color: rgb(var(--light-rgb) / 0.12);
+  border-color: rgb(var(--light-rgb) / 0.7);
+}
+
+@media (max-width: 768px) {
+  .event-banner-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 0;
+  }
+}

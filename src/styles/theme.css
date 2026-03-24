@@ -1,0 +1,181 @@
+/* ============================================
+   EYE10 THEME CSS VARIABLES
+   ============================================
+   Edit this file to change the entire website's appearance
+   All CSS variables are defined here for easy customization
+*/
+
+:root {
+  /* ========== COLORS - Eye10 Warm Premium (Shop-Matched) ========== */
+  /* Gold (brand highlight) */
+  --primary: #b58a2a;
+  --primary-dark: #8a6720;
+  --primary-light: #e0c27a;
+
+  /* Espresso (support / depth) */
+  --secondary: #1f1b16;
+  --secondary-dark: #14110e;
+
+  /* Terracotta (accent) */
+  --accent: #c56a3a;
+  --accent-dark: #a9572e;
+
+  /* Neutrals (warm) */
+  --dark: #1a1a1a;
+  --dark-light: #2a251f;
+  --light: #fffdf7;
+  --light-gray: #f6f0e4;
+  --gray: #6f675d;
+  --gray-dark: #4b443c;
+  --border: #e7dcc9;
+
+  --success: #10b981;
+  --success-dark: #059669;
+  --error: #ef4444;
+  --error-dark: #dc2626;
+  --warning: #f59e0b;
+  --warning-dark: #d97706;
+  --info: #b58a2a;
+
+  --white: #ffffff;
+  --black: #000000;
+
+  /* ========== RGB HELPERS (use with: rgb(var(--primary-rgb) / 0.15)) ========== */
+  --primary-rgb: 181 138 42;
+  --primary-light-rgb: 224 194 122;
+  --accent-rgb: 197 106 58;
+  --secondary-rgb: 31 27 22;
+  --dark-rgb: 26 26 26;
+  --light-rgb: 255 253 247;
+  --success-rgb: 16 185 129;
+  --error-rgb: 239 68 68;
+  --warning-rgb: 245 158 11;
+
+  /* ========== GRADIENTS - Warm Premium ========== */
+  --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  --gradient-primary-reverse: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  --gradient-secondary: linear-gradient(135deg, #2a251f 0%, var(--secondary-dark) 100%);
+  --gradient-hero: linear-gradient(135deg, var(--light) 0%, var(--light-gray) 45%, rgb(var(--primary-rgb) / 0.14) 100%);
+  --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  --gradient-background: linear-gradient(to bottom, var(--light) 0%, var(--light-gray) 100%);
+  --gradient-background-reverse: linear-gradient(to bottom, var(--light-gray) 0%, var(--light) 100%);
+
+  /* ========== TYPOGRAPHY - Professional Fonts ========== */
+  --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-heading: 'Montserrat', 'Poppins', sans-serif;
+  
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-size-4xl: 36px;
+  --font-size-5xl: 42px;
+  --font-size-6xl: 48px;
+  --font-size-7xl: 56px;
+  --font-size-8xl: 72px;
+
+  /* ========== SPACING ========== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 40px;
+  --spacing-3xl: 48px;
+  --spacing-4xl: 64px;
+  --spacing-5xl: 80px;
+  --spacing-6xl: 100px;
+
+  /* ========== BORDER RADIUS ========== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ========== SHADOWS (slightly warmer) ========== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* ========== TRANSITIONS ========== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  --transition-smooth: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ========== Z-INDEX ========== */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* ============================================
+   THEME PRESETS - Uncomment to use
+   ============================================ */
+
+/* Purple Theme (example preset) */
+/*
+:root {
+  --primary: #8b5cf6;
+  --primary-dark: #7c3aed;
+  --primary-light: #a78bfa;
+  --gradient-hero: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+*/
+
+/* Green Theme */
+/*
+:root {
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --primary-light: #34d399;
+  --gradient-hero: linear-gradient(135deg, #34d399 0%, #059669 100%);
+  --gradient-primary: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+*/
+
+/* Orange Theme */
+/*
+:root {
+  --primary: #f59e0b;
+  --primary-dark: #d97706;
+  --primary-light: #fbbf24;
+  --gradient-hero: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  --gradient-primary: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+*/
+
+/* Teal Theme */
+/*
+:root {
+  --primary: #14b8a6;
+  --primary-dark: #0d9488;
+  --primary-light: #5eead4;
+  --gradient-hero: linear-gradient(135deg, #5eead4 0%, #0d9488 100%);
+  --gradient-primary: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+}
+*/
+
+/* Red Theme */
+/*
+:root {
+  --primary: #ef4444;
+  --primary-dark: #dc2626;
+  --primary-light: #f87171;
+  --gradient-hero: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+  --gradient-primary: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+*/

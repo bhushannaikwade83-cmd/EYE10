@@ -1,0 +1,122 @@
+.emi-banner {
+  padding: 60px 0;
+  background: linear-gradient(135deg, rgb(var(--primary-rgb) / 0.06) 0%, rgb(var(--accent-rgb) / 0.05) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.emi-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgb(var(--primary-rgb) / 0.10) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 15s ease-in-out infinite;
+}
+
+.emi-content {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  background: var(--white);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgb(var(--primary-rgb) / 0.10);
+  position: relative;
+  z-index: 1;
+}
+
+.emi-icon-wrapper {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  background: var(--gradient-primary);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgb(var(--primary-rgb) / 0.25);
+}
+
+.emi-icon {
+  color: var(--white);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.emi-text {
+  flex: 1;
+}
+
+.emi-text h3 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: var(--dark);
+}
+
+.emi-text p {
+  font-size: 16px;
+  color: var(--gray-dark);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.emi-features {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.emi-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--dark);
+  font-weight: 500;
+}
+
+.emi-feature svg {
+  color: var(--success);
+  flex-shrink: 0;
+}
+
+.emi-cta {
+  flex-shrink: 0;
+  padding: 16px 32px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgb(var(--primary-rgb) / 0.25);
+}
+
+.emi-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgb(var(--primary-rgb) / 0.32);
+}
+
+@media (max-width: 968px) {
+  .emi-content {
+    flex-direction: column;
+    text-align: center;
+    padding: 32px;
+  }
+
+  .emi-features {
+    justify-content: center;
+  }
+
+  .emi-cta {
+    width: 100%;
+  }
+}
+
+

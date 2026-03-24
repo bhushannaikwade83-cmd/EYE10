@@ -1,0 +1,138 @@
+.product-sort-view {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 20px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--border);
+}
+
+.sort-controls {
+  position: relative;
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--light-gray);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-weight: 600;
+  color: var(--dark);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sort-btn:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+.sort-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  min-width: 200px;
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sort-option {
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--dark);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.sort-option:hover {
+  background: var(--light-gray);
+  color: var(--primary);
+}
+
+.sort-option.active {
+  background: var(--gradient-primary);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.view-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.view-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--light-gray);
+  border: 2px solid var(--border);
+  color: var(--gray);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.view-btn:hover {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.view-btn.active {
+  background: var(--gradient-primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .product-sort-view {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .sort-controls {
+    width: 100%;
+  }
+
+  .sort-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .view-controls {
+    justify-content: center;
+  }
+}
+
+
