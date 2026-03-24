@@ -340,3 +340,19 @@
     transform: translateY(-3px) translateZ(8px);
   }
 }
+
+@media (max-width: 480px) {
+  .app-3d .hero,
+  .app-3d .products-page,
+  .app-3d .product-detail-page,
+  .app-3d .contact-page,
+  .app-3d .cart-page,
+  .app-3d .checkout-page,
+  .app-3d .terms-page,
+  .app-3d .privacy-page,
+  .app-3d .return-policy-page,
+  .app-3d .not-found-page {
+    margin: 8px;
+    border-radius: 16px;
+  }
+}

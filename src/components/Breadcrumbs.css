@@ -74,12 +74,18 @@
 
 @media (max-width: 768px) {
   .breadcrumbs {
-    top: 75px;
-    padding: 12px 0;
+    top: 72px;
+    padding: 10px 0;
   }
 
   .breadcrumb-link,
   .breadcrumb-current {
     font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumbs {
+    top: 68px;
   }
 }

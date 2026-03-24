@@ -50,7 +50,7 @@ function AdminPanel() {
   }
 
   const handleLogout = async () => {
-    await signOut(auth)
+    if (auth) await signOut(auth)
     toast.success('Logged out')
   }
 

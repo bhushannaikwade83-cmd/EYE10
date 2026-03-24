@@ -26,6 +26,11 @@ function Home() {
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
+      if (!db) {
+        setFeaturedProducts(getSampleProducts().slice(0, 8))
+        setLoading(false)
+        return
+      }
       try {
         const q = query(collection(db, 'products'), limit(8))
         const snapshot = await getDocs(q)

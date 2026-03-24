@@ -27,18 +27,19 @@ function Checkout() {
       navigate('/cart')
     }
 
-    // Pre-fill user data if logged in
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) {
-        setFormData((prev) => ({
-          ...prev,
-          email: user.email || '',
-          name: user.displayName || '',
-        }))
-      }
-    })
-
-    return () => unsubscribe()
+    if (auth) {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (user) {
+          setFormData((prev) => ({
+            ...prev,
+            email: user.email || '',
+            name: user.displayName || '',
+          }))
+        }
+      })
+      return () => unsubscribe()
+    }
+    return undefined
   }, [cartItems, navigate])
 
   const handleChange = (e) => {
@@ -52,9 +53,15 @@ function Checkout() {
     e.preventDefault()
     setLoading(true)
 
+    if (!db) {
+      toast.error('Orders are unavailable: Firebase is not configured on this deployment.')
+      setLoading(false)
+      return
+    }
+
     try {
       const orderData = {
-        userId: auth.currentUser?.uid || null,
+        userId: auth?.currentUser?.uid || null,
         items: cartItems,
         total: getTotalPrice() + (getTotalPrice() >= 999 ? 0 : 99),
         shipping: getTotalPrice() >= 999 ? 0 : 99,

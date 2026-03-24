@@ -29,6 +29,12 @@ function ProductDetail() {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      if (!db) {
+        const sampleProduct = getSampleProduct(id)
+        if (sampleProduct) setProduct(sampleProduct)
+        setLoading(false)
+        return
+      }
       try {
         const docRef = doc(db, 'products', id)
         const docSnap = await getDoc(docRef)

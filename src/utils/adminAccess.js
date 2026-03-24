@@ -7,7 +7,7 @@ import { db } from '../firebase/config'
  * Passwords live only in Firebase Authentication, not in Firestore.
  */
 export async function isFirestoreAdmin(uid) {
-  if (!uid) return false
+  if (!uid || !db) return false
   const snap = await getDoc(doc(db, 'admins', uid))
   return snap.exists()
 }

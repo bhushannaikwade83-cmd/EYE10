@@ -34,7 +34,7 @@ function App() {
         <Navbar />
         <EventBanner />
         <Breadcrumbs />
-        <main>
+        <main id="main-content" tabIndex={-1}>
           <PageTransition>
             <Routes>
               <Route path="/" element={<Home />} />

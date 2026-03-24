@@ -848,8 +848,8 @@
 
 @media (max-width: 768px) {
   .hero {
-    padding: 160px 0 120px;
-    min-height: 85vh;
+    padding: 120px 0 80px;
+    min-height: min(85vh, 820px);
   }
 
   .hero-content {
@@ -933,6 +933,16 @@
   .hero-buttons .btn {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 100px 0 64px;
+  }
+
+  .section-header h2 {
+    font-size: clamp(26px, 8vw, 34px);
   }
 }
 

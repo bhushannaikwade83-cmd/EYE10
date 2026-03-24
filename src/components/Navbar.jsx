@@ -26,6 +26,17 @@ function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [menuOpen])
+
   const handleSearch = (e) => {
     e.preventDefault()
     if (searchQuery.trim()) {
@@ -110,6 +121,25 @@ function Navbar() {
         </div>
 
         <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
+          <form
+            onSubmit={(e) => {
+              handleSearch(e)
+              setMenuOpen(false)
+            }}
+            className="mobile-search-bar"
+          >
+            <input
+              type="search"
+              enterKeyHint="search"
+              placeholder="Search products…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="mobile-search-input"
+            />
+            <button type="submit" className="mobile-search-btn" aria-label="Search">
+              <Search size={20} />
+            </button>
+          </form>
           <Link to="/" onClick={() => setMenuOpen(false)} className="mobile-link">Home</Link>
           <a href="#about" onClick={(e) => handleAnchorClick(e, '#about')} className="mobile-link">About Us</a>
           <a href="#services" onClick={(e) => handleAnchorClick(e, '#services')} className="mobile-link">Services</a>

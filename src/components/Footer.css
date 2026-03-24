@@ -501,7 +501,7 @@
   }
   
   .footer {
-    padding: 80px 0 40px;
+    padding: 80px 0 max(40px, env(safe-area-inset-bottom, 0px));
   }
 
   .footer-logo-image {

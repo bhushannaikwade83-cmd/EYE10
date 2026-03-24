@@ -9,6 +9,10 @@ function AdminRoute({ children }) {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
+    if (!auth) {
+      setChecking(false)
+      return
+    }
     const unsub = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser)
       if (!currentUser) {
@@ -37,6 +41,10 @@ function AdminRoute({ children }) {
         </div>
       </main>
     )
+  }
+
+  if (!auth) {
+    return <Navigate to="/admin/login" replace state={{ firebaseMissing: true }} />
   }
 
   if (!user) {

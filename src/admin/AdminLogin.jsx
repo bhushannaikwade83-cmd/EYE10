@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { auth } from '../firebase/config'
+import { auth, isFirebaseConfigured } from '../firebase/config'
 import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { isFirestoreAdmin } from '../utils/adminAccess'
@@ -17,6 +17,9 @@ function loginErrorMessage(error) {
   if (code === 'auth/invalid-email') return 'Enter a valid email address.'
   if (code === 'auth/too-many-requests') return 'Too many attempts. Try again in a few minutes.'
   if (code === 'auth/user-disabled') return 'This account has been disabled.'
+  if (code === 'auth/invalid-api-key') {
+    return 'Invalid Firebase API key. On Vercel/hosting, set VITE_FIREBASE_API_KEY (and other VITE_FIREBASE_*) in Environment Variables, then redeploy.'
+  }
   return error?.message || 'Login failed'
 }
 
@@ -34,9 +37,16 @@ function AdminLogin() {
       )
       navigate('/admin/login', { replace: true, state: {} })
     }
+    if (location.state?.firebaseMissing) {
+      toast.error(
+        'Firebase is not configured for this deployment. Add all VITE_FIREBASE_* variables on your host and redeploy.'
+      )
+      navigate('/admin/login', { replace: true, state: {} })
+    }
   }, [location.state, navigate])
 
   useEffect(() => {
+    if (!auth) return undefined
     const unsub = auth.onAuthStateChanged(async (user) => {
       if (!user) return
       try {
@@ -51,6 +61,14 @@ function AdminLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!auth) {
+      toast.error(
+        isFirebaseConfigured()
+          ? 'Firebase Auth is unavailable (e.g. invalid API key). Fix env vars or API key restrictions and redeploy.'
+          : 'Firebase is not configured. Set VITE_FIREBASE_* env vars and redeploy.'
+      )
+      return
+    }
     setLoading(true)
 
     try {
@@ -78,6 +96,22 @@ function AdminLogin() {
       <div className="container" style={{ paddingTop: '140px', paddingBottom: '80px' }}>
         <div className="card" style={{ maxWidth: '480px', margin: '0 auto' }}>
           <h1 style={{ marginBottom: '8px' }}>Admin Login</h1>
+          {!auth && (
+            <p
+              style={{
+                marginBottom: '16px',
+                padding: '12px',
+                borderRadius: '10px',
+                background: 'rgb(var(--accent-rgb) / 0.12)',
+                color: 'var(--dark)',
+                fontSize: '0.95rem',
+              }}
+            >
+              {isFirebaseConfigured()
+                ? 'Firebase failed to initialize (invalid API key or project). Check the browser console and Google Cloud API key restrictions for your live domain.'
+                : 'Firebase is not active: add all VITE_FIREBASE_* variables in Vercel → Settings → Environment Variables (match .env.example), then redeploy.'}
+            </p>
+          )}
           <p style={{ color: 'var(--gray-dark)', marginBottom: '12px' }}>
             Uses Firebase Authentication (same project as your <code>.env</code>). Sign in with an
             admin email you created under Firebase Console → Authentication.
@@ -119,7 +153,11 @@ function AdminLogin() {
               />
             </div>
 
-            <button className="btn btn-primary" type="submit" disabled={loading}>
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={loading || !auth}
+            >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>

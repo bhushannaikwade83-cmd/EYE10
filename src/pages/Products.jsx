@@ -22,6 +22,13 @@ function Products() {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!db) {
+        const sampleProducts = getSampleProducts()
+        setProducts(sampleProducts)
+        setFilteredProducts(sampleProducts)
+        setLoading(false)
+        return
+      }
       try {
         const q = query(collection(db, 'products'))
         const snapshot = await getDocs(q)

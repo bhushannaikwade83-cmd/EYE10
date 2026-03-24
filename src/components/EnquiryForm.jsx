@@ -28,6 +28,12 @@ function EnquiryForm({ product, onClose }) {
     e.preventDefault()
     setLoading(true)
 
+    if (!db) {
+      toast.error('Enquiry needs Firebase. Configure VITE_FIREBASE_* on this deployment.')
+      setLoading(false)
+      return
+    }
+
     try {
       await addDoc(collection(db, 'enquiries'), {
         ...formData,

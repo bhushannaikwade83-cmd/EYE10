@@ -16,6 +16,12 @@ export function SiteContentProvider({ children }) {
   useEffect(() => {
     let unsubscribe = null
 
+    if (!db) {
+      setContent(defaultSiteContent)
+      setLoading(false)
+      return
+    }
+
     try {
       const ref = doc(db, 'siteContent', 'main')
       unsubscribe = onSnapshot(
@@ -41,6 +47,9 @@ export function SiteContentProvider({ children }) {
   }, [])
 
   const saveContent = async (nextContent) => {
+    if (!db) {
+      throw new Error('Firebase is not configured. Add VITE_FIREBASE_* env vars and redeploy.')
+    }
     const ref = doc(db, 'siteContent', 'main')
     const payload = {
       ...nextContent,

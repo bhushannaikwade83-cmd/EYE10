@@ -10,6 +10,11 @@ function RelatedProducts({ currentProduct }) {
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
+      if (!db) {
+        setRelatedProducts(getSampleRelatedProducts(currentProduct))
+        setLoading(false)
+        return
+      }
       try {
         let q
         if (currentProduct?.category) {

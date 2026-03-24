@@ -383,11 +383,17 @@
   border: none;
   cursor: pointer;
   color: var(--dark);
-  padding: 8px;
-  border-radius: 8px;
+  padding: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
   transition: all 0.3s ease;
   position: relative;
   z-index: 1001;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .menu-toggle:hover {
@@ -430,6 +436,45 @@
   transform: rotate(0deg) scale(1);
 }
 
+.mobile-search-bar {
+  display: none;
+  width: 100%;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: none;
+  font-size: 16px;
+  background: transparent;
+}
+
+.mobile-search-input:focus {
+  outline: none;
+}
+
+.mobile-search-btn {
+  padding: 0 18px;
+  border: none;
+  background: var(--gradient-primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .mobile-menu {
   display: none;
   flex-direction: column;
@@ -445,7 +490,10 @@
 }
 
 .mobile-menu.open {
-  max-height: 500px;
+  max-height: min(85vh, 620px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   opacity: 1;
   transform: translateY(0);
   animation: slideDownMenu 0.4s ease-out;
@@ -541,6 +589,24 @@
 }
 
 @media (max-width: 768px) {
+  .navbar {
+    padding: 12px 0;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+
+  .navbar.scrolled {
+    padding: 10px 0;
+    padding-top: max(10px, env(safe-area-inset-top));
+  }
+
+  .navbar.scrolled .logo-image {
+    height: 46px;
+  }
+
+  .logo-image {
+    height: 48px;
+  }
+
   .search-bar {
     display: none;
   }
@@ -550,11 +616,31 @@
   }
 
   .menu-toggle {
-    display: block;
+    display: flex;
   }
 
   .mobile-menu {
     display: flex;
+  }
+
+  .mobile-search-bar {
+    display: flex;
+    margin-bottom: 4px;
+  }
+
+  .nav-content {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 0;
+    padding-top: max(10px, env(safe-area-inset-top));
+  }
+
+  .logo-image {
+    height: 44px;
   }
 }
 
