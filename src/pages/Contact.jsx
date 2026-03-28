@@ -6,7 +6,13 @@ import toast from 'react-hot-toast'
 import { saveLastInquiryContact } from '../utils/inquiryContact'
 import { useSiteContent } from '../context/SiteContentContext'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
-import { getSitePhone, getSiteEmail, getSiteAddress, getSiteWhatsAppDigits } from '../utils/siteContact'
+import {
+  getSitePhone,
+  getSiteEmail,
+  getSiteAddress,
+  getSiteWhatsAppDigits,
+  googleMapsUrlForAddress,
+} from '../utils/siteContact'
 import EnquiryForm from '../components/EnquiryForm'
 import './Contact.css'
 
@@ -15,6 +21,7 @@ function Contact() {
   const displayPhone = getSitePhone(content)
   const displayEmail = getSiteEmail(content)
   const displayAddress = getSiteAddress(content)
+  const addressMapsUrl = googleMapsUrlForAddress(displayAddress)
   const telHref = `tel:${displayPhone.replace(/\s+/g, '')}`
   const mailHref = `mailto:${displayEmail}`
   const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
@@ -86,7 +93,21 @@ function Contact() {
               <div className="info-card">
                 <MapPin size={32} className="info-icon" />
                 <h3>Visit Us</h3>
-                <p className="contact-address-block">{displayAddress}</p>
+                <p className="contact-address-block">
+                  {addressMapsUrl ? (
+                    <a
+                      href={addressMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="contact-maps-link"
+                      aria-label="Open shop address in Google Maps"
+                    >
+                      {displayAddress}
+                    </a>
+                  ) : (
+                    displayAddress
+                  )}
+                </p>
               </div>
 
               <div className="info-card">

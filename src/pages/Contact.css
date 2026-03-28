@@ -104,6 +104,10 @@
   margin-bottom: 0;
 }
 
+.contact-maps-link {
+  display: inline;
+}
+
 .info-card a {
   color: var(--primary);
   text-decoration: none;

@@ -22,6 +22,13 @@ export function getSiteAddress(content) {
   ).trim()
 }
 
+/** Google Maps search URL for the store address; empty string if no address. */
+export function googleMapsUrlForAddress(address) {
+  const q = String(address || '').trim()
+  if (!q) return ''
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
+}
+
 export function getSiteWhatsAppDigits(content) {
   const c = content || {}
   const raw = String(c.contact?.whatsappNumber || defaultSiteContent.contact.whatsappNumber || '')

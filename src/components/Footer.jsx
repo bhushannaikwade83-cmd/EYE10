@@ -2,7 +2,7 @@ import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube, Clock, File
 import { Link } from 'react-router-dom'
 import logoImage from '../assets/eye10-logo.png'
 import { useSiteContent } from '../context/SiteContentContext'
-import { getSitePhone, getSiteEmail, getSiteAddress } from '../utils/siteContact'
+import { getSitePhone, getSiteEmail, getSiteAddress, googleMapsUrlForAddress } from '../utils/siteContact'
 import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
 import { normalizeExternalUrl } from '../utils/socialLinks'
 import './Footer.css'
@@ -19,6 +19,7 @@ function Footer() {
   const footerPhone = getSitePhone(content)
   const footerEmail = getSiteEmail(content)
   const footerAddress = getSiteAddress(content)
+  const mapsUrl = googleMapsUrlForAddress(footerAddress)
   const catalogueItems = getCatalogueItems(content)
   const socialLinks = content?.socialLinks || {}
   const hasSocialLinks = FOOTER_SOCIAL.some(({ key }) => normalizeExternalUrl(socialLinks[key]))
@@ -113,7 +114,19 @@ function Footer() {
             <ul className="footer-contact">
               <li>
                 <MapPin size={18} />
-                <span>{footerAddress}</span>
+                {mapsUrl ? (
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="footer-address-link"
+                    aria-label="Open shop address in Google Maps"
+                  >
+                    {footerAddress}
+                  </a>
+                ) : (
+                  <span>{footerAddress}</span>
+                )}
               </li>
               <li>
                 <Phone size={18} />
@@ -134,33 +147,38 @@ function Footer() {
         <div className="footer-bottom">
           <p className="footer-copyright">&copy; {new Date().getFullYear()} EYE10. All rights reserved.</p>
 
-          <div className="footer-credits" aria-label="Website credits">
-            <p className="footer-credits__intro">Designed with love for premium eyewear</p>
-            <div className="footer-credits__grid">
-              <article className="footer-credits-card">
-                <h3 className="footer-credits-card__name">Vedant Kapse</h3>
-                <p className="footer-credits-card__role">Frontend developer</p>
-                <p className="footer-credits-card__meta">
-                  <span className="footer-credits-card__label">Contact</span>
-                  <a href="tel:+917208324505">72083 24505</a>
-                </p>
-                <p className="footer-credits-card__meta">
-                  <span className="footer-credits-card__label">Email</span>
-                  <a href="mailto:vedantkapse901@gmail.com">vedantkapse901@gmail.com</a>
-                </p>
-              </article>
-              <article className="footer-credits-card">
-                <h3 className="footer-credits-card__name">Bhushan Naikwade</h3>
-                <p className="footer-credits-card__role">Full stack developer</p>
-                <p className="footer-credits-card__meta">
-                  <span className="footer-credits-card__label">Contact</span>
-                  <a href="tel:+919773609077">97736 09077</a>
-                </p>
-                <p className="footer-credits-card__meta">
-                  <span className="footer-credits-card__label">Email</span>
-                  <a href="mailto:digitrixmedia05@gmail.com">digitrixmedia05@gmail.com</a>
-                </p>
-              </article>
+          <div className="footer-credits-zone">
+            <span className="footer-credits-zone__orb footer-credits-zone__orb--a" aria-hidden />
+            <span className="footer-credits-zone__orb footer-credits-zone__orb--b" aria-hidden />
+            <span className="footer-credits-zone__shine" aria-hidden />
+            <div className="footer-credits" aria-label="Website credits">
+              <p className="footer-credits__intro">Designed with love for premium eyewear</p>
+              <div className="footer-credits__grid">
+                <article className="footer-credits-card">
+                  <h3 className="footer-credits-card__name">Vedant Kapse</h3>
+                  <p className="footer-credits-card__role">Frontend developer</p>
+                  <p className="footer-credits-card__meta">
+                    <span className="footer-credits-card__label">Contact</span>
+                    <a href="tel:+917208324505">72083 24505</a>
+                  </p>
+                  <p className="footer-credits-card__meta">
+                    <span className="footer-credits-card__label">Email</span>
+                    <a href="mailto:vedantkapse901@gmail.com">vedantkapse901@gmail.com</a>
+                  </p>
+                </article>
+                <article className="footer-credits-card">
+                  <h3 className="footer-credits-card__name">Bhushan Naikwade</h3>
+                  <p className="footer-credits-card__role">Full stack developer</p>
+                  <p className="footer-credits-card__meta">
+                    <span className="footer-credits-card__label">Contact</span>
+                    <a href="tel:+919773609077">97736 09077</a>
+                  </p>
+                  <p className="footer-credits-card__meta">
+                    <span className="footer-credits-card__label">Email</span>
+                    <a href="mailto:digitrixmedia05@gmail.com">digitrixmedia05@gmail.com</a>
+                  </p>
+                </article>
+              </div>
             </div>
           </div>
         </div>
