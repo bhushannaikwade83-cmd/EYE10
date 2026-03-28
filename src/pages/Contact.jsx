@@ -11,7 +11,7 @@ import {
   getSiteEmail,
   getSiteAddress,
   getSiteWhatsAppDigits,
-  googleMapsUrlForAddress,
+  getStoreGoogleMapsUrl,
 } from '../utils/siteContact'
 import EnquiryForm from '../components/EnquiryForm'
 import './Contact.css'
@@ -21,7 +21,7 @@ function Contact() {
   const displayPhone = getSitePhone(content)
   const displayEmail = getSiteEmail(content)
   const displayAddress = getSiteAddress(content)
-  const addressMapsUrl = googleMapsUrlForAddress(displayAddress)
+  const addressMapsUrl = getStoreGoogleMapsUrl(content)
   const telHref = `tel:${displayPhone.replace(/\s+/g, '')}`
   const mailHref = `mailto:${displayEmail}`
   const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)

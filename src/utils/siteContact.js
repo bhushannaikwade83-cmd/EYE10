@@ -29,6 +29,18 @@ export function googleMapsUrlForAddress(address) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`
 }
 
+/**
+ * Prefer saved short link / place URL; otherwise build a search URL from the address text.
+ */
+export function getStoreGoogleMapsUrl(content) {
+  const c = content || {}
+  const fixed = String(
+    c.contact?.googleMapsUrl || c.footer?.googleMapsUrl || defaultSiteContent.contact.googleMapsUrl || ''
+  ).trim()
+  if (fixed) return fixed
+  return googleMapsUrlForAddress(getSiteAddress(content))
+}
+
 export function getSiteWhatsAppDigits(content) {
   const c = content || {}
   const raw = String(c.contact?.whatsappNumber || defaultSiteContent.contact.whatsappNumber || '')
@@ -44,6 +56,7 @@ export function mirrorContactToNavbarFooter(draft) {
   const email = String(draft.contact?.email || '').trim()
   const address = String(draft.contact?.address || '').trim()
   const wa = String(draft.contact?.whatsappNumber || '').trim()
+  const googleMapsUrl = String(draft.contact?.googleMapsUrl || '').trim()
   return {
     ...draft,
     contact: {
@@ -52,6 +65,7 @@ export function mirrorContactToNavbarFooter(draft) {
       email,
       address,
       whatsappNumber: wa,
+      googleMapsUrl,
     },
     navbar: { ...(draft.navbar || {}), phone },
     footer: {
@@ -59,6 +73,7 @@ export function mirrorContactToNavbarFooter(draft) {
       phone,
       email,
       address,
+      googleMapsUrl,
     },
   }
 }

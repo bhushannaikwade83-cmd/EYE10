@@ -423,6 +423,17 @@ function AdminPanel() {
               onChange={(e) => setField('contact', 'address', e.target.value)}
               placeholder="Full address (navbar links, footer, contact page)"
             />
+            <input
+              className="input"
+              type="url"
+              inputMode="url"
+              value={draft.contact?.googleMapsUrl || ''}
+              onChange={(e) => setField('contact', 'googleMapsUrl', e.target.value)}
+              placeholder="Google Maps link for the shop (e.g. maps.app.goo.gl/…)"
+            />
+            <p className="admin-muted" style={{ marginTop: '-8px' }}>
+              Used when visitors tap the address. If empty, a search link is built from the address text.
+            </p>
 
             <h2>Footer</h2>
             <p className="admin-muted" style={{ marginTop: 0 }}>

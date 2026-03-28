@@ -2,7 +2,7 @@ import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube, Clock, File
 import { Link } from 'react-router-dom'
 import logoImage from '../assets/eye10-logo.png'
 import { useSiteContent } from '../context/SiteContentContext'
-import { getSitePhone, getSiteEmail, getSiteAddress, googleMapsUrlForAddress } from '../utils/siteContact'
+import { getSitePhone, getSiteEmail, getSiteAddress, getStoreGoogleMapsUrl } from '../utils/siteContact'
 import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
 import { normalizeExternalUrl } from '../utils/socialLinks'
 import './Footer.css'
@@ -19,7 +19,7 @@ function Footer() {
   const footerPhone = getSitePhone(content)
   const footerEmail = getSiteEmail(content)
   const footerAddress = getSiteAddress(content)
-  const mapsUrl = googleMapsUrlForAddress(footerAddress)
+  const mapsUrl = getStoreGoogleMapsUrl(content)
   const catalogueItems = getCatalogueItems(content)
   const socialLinks = content?.socialLinks || {}
   const hasSocialLinks = FOOTER_SOCIAL.some(({ key }) => normalizeExternalUrl(socialLinks[key]))

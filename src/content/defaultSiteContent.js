@@ -12,6 +12,8 @@ export const defaultSiteContent = {
     whatsappNumber: '9773609077',
     email: 'info@eye10.com',
     address: '123 Main Street, City, State - 123456, India',
+    /** Store location in Google Maps (footer + contact “Visit us”). Short link OK. */
+    googleMapsUrl: 'https://maps.app.goo.gl/rdbWifiseAVVfFm89',
   },
   hero: {
     badge: 'Exclusive Eyewear Showroom',
@@ -35,6 +37,7 @@ export const defaultSiteContent = {
     phone: '+91 99999 99999',
     email: 'info@eye10.com',
     address: '123 Main Street, City, State - 123456, India',
+    googleMapsUrl: 'https://maps.app.goo.gl/rdbWifiseAVVfFm89',
   },
   /** Footer social icons — full URLs (https://…). Empty string hides the icon. */
   socialLinks: {
