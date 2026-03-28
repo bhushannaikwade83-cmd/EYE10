@@ -12,11 +12,11 @@
     0 -1px 0 rgba(0, 0, 0, 0.05) inset;
   z-index: 1000;
   padding: 22px 0;
-  transition: all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: padding 0.35s ease, background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
   border-bottom: 2.5px solid rgb(var(--primary-rgb) / 0.22);
   animation: slideDown 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-  overflow: hidden;
-  will-change: transform, backdrop-filter;
+  overflow-x: visible;
+  overflow-y: visible;
 }
 
 @keyframes slideDown {
@@ -71,10 +71,6 @@
   backdrop-filter: blur(60px) saturate(250%);
 }
 
-.navbar.scrolled .logo-image {
-  height: 54px;
-}
-
 .navbar:hover {
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.5) inset;
@@ -87,6 +83,7 @@
   justify-content: space-between;
   gap: 24px;
   min-width: 0;
+  width: 100%;
 }
 
 .logo {
@@ -94,32 +91,27 @@
   align-items: center;
   text-decoration: none;
   color: var(--dark);
-  animation: fadeInLeft 0.8s ease-out;
   position: relative;
+  flex-shrink: 0;
 }
 
 .logo-image {
   height: 62px;
   width: auto;
   display: block;
-  transition: all 0.35s ease;
+  transition: filter 0.25s ease, transform 0.2s ease;
   filter: drop-shadow(0 4px 10px rgb(var(--primary-rgb) / 0.25));
-}
-
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .logo:hover .logo-image {
-  transform: scale(1.05);
+  transform: scale(1.04) translateZ(0);
   filter: drop-shadow(0 8px 18px rgb(var(--primary-rgb) / 0.35));
+}
+
+.logo:active .logo-image {
+  transform: scale(1.02) translateZ(0);
 }
 
 @keyframes logoPulse {
@@ -132,10 +124,10 @@
 }
 
 .search-bar {
-  /* Prevent flex from shrinking the bar to a few pixels when nav links compete for space */
+  /* Wide enough for full placeholder copy; grows between logo and nav links */
   flex: 1 1 320px;
   min-width: min(100%, 280px);
-  max-width: 640px;
+  max-width: min(680px, calc(100vw - 420px));
   display: flex;
   gap: 0;
   border: 2px solid var(--border);
@@ -171,16 +163,21 @@
 .search-input {
   flex: 1;
   min-width: 0;
-  padding: 14px 18px;
+  padding: 16px 20px;
   border: none;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.45;
   background: transparent;
   transition: all 0.3s ease;
 }
 
 .search-input::placeholder {
   color: var(--gray);
+  opacity: 0.92;
   transition: opacity 0.3s ease;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .search-bar:focus-within .search-input::placeholder {
@@ -192,8 +189,9 @@
 }
 
 .search-btn {
-  padding: 14px 22px;
+  padding: 16px 24px;
   flex-shrink: 0;
+  min-width: 52px;
   background: var(--gradient-primary);
   color: var(--white);
   border: none;
@@ -237,16 +235,26 @@
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   animation: fadeInRight 0.8s ease-out 0.3s both;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
 }
 
-/* Keep Enquire Now button aligned with nav items */
+/* Keep Enquire Now on-screen: compact CTA + allow row wrap before clipping */
 .nav-links .btn {
   align-self: center;
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+.nav-links .btn.btn-primary {
+  padding: 10px 18px;
+  font-size: 14px;
+  letter-spacing: 0.35px;
 }
 
 @keyframes fadeInRight {
@@ -461,7 +469,14 @@
   padding: 16px 18px;
   border: none;
   font-size: 16px;
+  line-height: 1.45;
   background: transparent;
+}
+
+.mobile-search-input::placeholder {
+  color: var(--gray);
+  opacity: 0.92;
+  white-space: normal;
 }
 
 .mobile-search-input:focus {
@@ -476,8 +491,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
-  min-height: 52px;
+  min-width: 56px;
+  min-height: 54px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -543,6 +558,8 @@
 .mobile-menu.open .mobile-link:nth-child(5) { animation-delay: 0.3s; }
 .mobile-menu.open .mobile-link:nth-child(6) { animation-delay: 0.35s; }
 .mobile-menu.open .mobile-link:nth-child(7) { animation-delay: 0.4s; }
+.mobile-menu.open .mobile-link:nth-child(8) { animation-delay: 0.45s; }
+.mobile-menu.open .mobile-link:nth-child(9) { animation-delay: 0.5s; }
 
 @keyframes slideInLeft {
   from {
@@ -601,13 +618,14 @@
     padding-top: max(12px, env(safe-area-inset-top));
   }
 
+  .navbar .container {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
   .navbar.scrolled {
     padding: 10px 0;
     padding-top: max(10px, env(safe-area-inset-top));
-  }
-
-  .navbar.scrolled .logo-image {
-    height: 46px;
   }
 
   .logo-image {

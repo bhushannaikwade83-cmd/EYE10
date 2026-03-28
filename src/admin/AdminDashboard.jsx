@@ -190,6 +190,9 @@ export function AdminDashboard() {
             <Link to={adminTabPath('catalogue')} replace className="admin-dashboard__link">
               Catalogue PDF
             </Link>
+            <Link to={adminTabPath('social')} replace className="admin-dashboard__link">
+              Social links
+            </Link>
           </div>
         </>
       )}

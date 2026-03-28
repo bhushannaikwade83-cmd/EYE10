@@ -6,6 +6,11 @@ import { db } from '../firebase/config'
 import { defaultSiteContent } from '../content/defaultSiteContent'
 import { brandLogoFromName } from '../utils/productDoc'
 import { useSiteContent } from '../context/SiteContentContext'
+import {
+  getCatalogueItems,
+  getCatalogueItemForBrand,
+  openCataloguePdfInNewTabAndDownload,
+} from '../utils/catalogue'
 import './Brands.css'
 
 function Brands() {
@@ -64,14 +69,14 @@ function Brands() {
     }
   }, [db, brandsItemsKey])
 
-  const pdfUrl = (content?.catalogue?.pdfUrl || '').trim()
-  const catalogueLabel = (content?.catalogue?.title || 'Download catalogue').trim() || 'Download catalogue'
+  const catalogueItems = getCatalogueItems(content)
 
-  const openCatalogue = () => {
-    if (pdfUrl) {
-      window.open(pdfUrl, '_blank', 'noopener,noreferrer')
+  const openCatalogueForBrand = (brandName) => {
+    const row = getCatalogueItemForBrand(content, brandName)
+    if (row) {
+      void openCataloguePdfInNewTabAndDownload(row)
     } else {
-      toast('Full catalogue PDF is not available yet. Check back soon.')
+      toast('No catalogue PDF for this brand yet. Check back soon.')
     }
   }
 
@@ -83,13 +88,24 @@ function Brands() {
           <p className="section-subtitle">{subtitle}</p>
         </div>
 
-        {pdfUrl ? (
+        {catalogueItems.length > 0 ? (
           <div className="brands-catalogue-cta">
-            <button type="button" className="btn btn-primary brands-catalogue-btn" onClick={openCatalogue}>
-              <FileText size={20} aria-hidden />
-              {catalogueLabel}
-            </button>
-            <p className="brands-catalogue-hint">PDF opens in a new tab — save or print from your browser.</p>
+            <div className="brands-catalogue-cta-buttons">
+              {catalogueItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="btn btn-primary brands-catalogue-btn"
+                  onClick={() => void openCataloguePdfInNewTabAndDownload(item)}
+                >
+                  <FileText size={20} aria-hidden />
+                  {(item.title || item.brandName || 'Catalogue').trim() || 'Catalogue'}
+                </button>
+              ))}
+            </div>
+            <p className="brands-catalogue-hint">
+              Opens in a new tab and starts a download when your browser allows it.
+            </p>
           </div>
         ) : null}
 
@@ -107,7 +123,7 @@ function Brands() {
               <div key={brand.name} className="brand-card">
                 <div className="brand-logo">{brand.logo}</div>
                 <div className="brand-name">{brand.name}</div>
-                <button type="button" className="brand-download" onClick={openCatalogue}>
+                <button type="button" className="brand-download" onClick={() => openCatalogueForBrand(brand.name)}>
                   <Download size={16} aria-hidden />
                   Catalogue
                 </button>

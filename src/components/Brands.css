@@ -228,8 +228,19 @@
   padding: 0 12px;
 }
 
-.brands-catalogue-btn {
+.brands-catalogue-cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   width: 100%;
+  max-width: 720px;
+}
+
+.brands-catalogue-btn {
+  width: auto;
+  min-width: 160px;
   max-width: 360px;
   justify-content: center;
 }
@@ -247,8 +258,21 @@
     margin: -24px auto 36px;
   }
 
+  .brands-catalogue-btn {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   .brands-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .brands-section .container {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
   }
 }
 

@@ -5,13 +5,14 @@ import { addToComparison } from './ProductComparison'
 import { addPriceAlert } from './PriceDropAlerts'
 import ProductQuickView from './ProductQuickView'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
+import { getSiteWhatsAppDigits } from '../utils/siteContact'
 import { useSiteContent } from '../context/SiteContentContext'
 import './ProductCard.css'
 
 function ProductCard({ product }) {
   const [showQuickView, setShowQuickView] = useState(false)
   const { content } = useSiteContent()
-  const whatsappUrl = buildWhatsAppUrl(content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
 
   // Determine badges
   const badges = []

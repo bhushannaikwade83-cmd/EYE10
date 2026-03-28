@@ -1,4 +1,4 @@
-import { Eye, Wrench, Sparkles, Shield, Award, Stethoscope, Frame, Zap } from 'lucide-react'
+import { Eye, Wrench, Sparkles, Shield, Award, Frame } from 'lucide-react'
 import './Services.css'
 
 function Services() {

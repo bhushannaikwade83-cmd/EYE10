@@ -1,0 +1,60 @@
+/**
+ * Mobile & touch: safe areas, overflow, iOS quirks, readable tap targets.
+ */
+
+#main-content {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.products-page,
+.contact-page,
+.services-page,
+.about-page,
+.terms-page,
+.privacy-page,
+.product-detail-page {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Main content clears home-indicator on notched phones */
+@media (max-width: 768px) {
+  #main-content {
+    padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 22px 18px;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 18px 14px;
+  }
+}
+
+/* Coarse pointers: minimum tap size without hurting desktop */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .btn-outline,
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

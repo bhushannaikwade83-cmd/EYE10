@@ -6,7 +6,8 @@ service firebase.storage {
         && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
     }
 
-    match /catalogue/{fileName} {
+    // Single-file legacy path (catalogue/eye10-catalogue.pdf) and per-brand paths (catalogue/brands/…)
+    match /catalogue/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin()
         && request.resource.size < 25 * 1024 * 1024

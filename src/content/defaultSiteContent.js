@@ -6,7 +6,9 @@ export const defaultSiteContent = {
   navbar: {
     phone: '+91 99999 99999',
   },
+  /** Canonical store for phone, WhatsApp, email, address — mirrored to navbar/footer on save in Admin. */
   contact: {
+    phone: '+91 99999 99999',
     whatsappNumber: '9773609077',
     email: 'info@eye10.com',
     address: '123 Main Street, City, State - 123456, India',
@@ -34,6 +36,13 @@ export const defaultSiteContent = {
     email: 'info@eye10.com',
     address: '123 Main Street, City, State - 123456, India',
   },
+  /** Footer social icons — full URLs (https://…). Empty string hides the icon. */
+  socialLinks: {
+    facebook: '',
+    instagram: '',
+    twitter: '',
+    youtube: '',
+  },
   eventBanner: {
     enabled: true,
     title: 'Demo Event Banner: Republic Day Offer',
@@ -43,14 +52,17 @@ export const defaultSiteContent = {
     startDate: '',
     endDate: '',
   },
-  /** Set via Admin → Catalogue (Firebase Storage upload writes pdfUrl + storagePath). */
+  /** Legacy single PDF; kept in sync with first `catalogueItems` entry when saving from Admin. */
   catalogue: {
+    brandName: '',
     title: 'EYE10 product catalogue',
     pdfUrl: '',
     storagePath: '',
     fileName: '',
     updatedAt: '',
   },
+  /** Per-brand PDF catalogues: { id, brandName, title?, pdfUrl, storagePath?, fileName?, updatedAt? } */
+  catalogueItems: [],
   /** Up to 8 product document IDs from Firestore `products` (shown on Home featured section). */
   featuredProductIds: [],
   /**
@@ -92,20 +104,65 @@ export const defaultSiteContent = {
   },
 }
 
+function mergeCatalogueItems(remote) {
+  const raw = remote.catalogueItems
+  if (Array.isArray(raw) && raw.length > 0) {
+    return raw.filter(Boolean).slice(0, 40)
+  }
+  const c = remote.catalogue
+  if (c && String(c.pdfUrl || '').trim()) {
+    return [
+      {
+        id: 'legacy',
+        brandName: String(c.brandName || 'Catalogue').trim() || 'Catalogue',
+        title: String(c.title || c.brandName || 'Download catalogue').trim() || 'Download catalogue',
+        pdfUrl: String(c.pdfUrl).trim(),
+        storagePath: String(c.storagePath || '').trim(),
+        fileName: String(c.fileName || '').trim(),
+        updatedAt: c.updatedAt || '',
+      },
+    ]
+  }
+  return []
+}
+
 export const mergeSiteContent = (remote = {}) => ({
   ...defaultSiteContent,
   ...remote,
   brand: { ...defaultSiteContent.brand, ...(remote.brand || {}) },
   navbar: { ...defaultSiteContent.navbar, ...(remote.navbar || {}) },
-  contact: { ...defaultSiteContent.contact, ...(remote.contact || {}) },
+  contact: {
+    ...defaultSiteContent.contact,
+    ...(remote.contact || {}),
+    phone:
+      (remote.contact && remote.contact.phone) ||
+      (remote.navbar && remote.navbar.phone) ||
+      (remote.footer && remote.footer.phone) ||
+      defaultSiteContent.contact.phone,
+    email:
+      (remote.contact && remote.contact.email) ||
+      (remote.footer && remote.footer.email) ||
+      defaultSiteContent.contact.email,
+    address:
+      (remote.contact && remote.contact.address) ||
+      (remote.footer && remote.footer.address) ||
+      defaultSiteContent.contact.address,
+    whatsappNumber:
+      (remote.contact && remote.contact.whatsappNumber) || defaultSiteContent.contact.whatsappNumber,
+  },
   hero: { ...defaultSiteContent.hero, ...(remote.hero || {}) },
   about: { ...defaultSiteContent.about, ...(remote.about || {}) },
   cta: { ...defaultSiteContent.cta, ...(remote.cta || {}) },
   footer: { ...defaultSiteContent.footer, ...(remote.footer || {}) },
+  socialLinks: {
+    ...defaultSiteContent.socialLinks,
+    ...(remote.socialLinks || {}),
+  },
   eventBanner: {
     ...defaultSiteContent.eventBanner,
     ...(remote.eventBanner || {}),
   },
+  catalogueItems: mergeCatalogueItems(remote),
   catalogue: {
     ...defaultSiteContent.catalogue,
     ...(remote.catalogue || {}),

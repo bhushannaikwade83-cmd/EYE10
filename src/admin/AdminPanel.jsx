@@ -3,10 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { getAdminTabFromLocation } from './adminTabs'
 import { signOut } from 'firebase/auth'
 import { collection, getDocs, limit, query } from 'firebase/firestore'
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { auth, db, storage } from '../firebase/config'
+import { auth, db } from '../firebase/config'
 import { useSiteContent } from '../context/SiteContentContext'
-import { defaultSiteContent, mergeSiteContent } from '../content/defaultSiteContent'
+import { mergeSiteContent } from '../content/defaultSiteContent'
 import toast from 'react-hot-toast'
 import {
   COUPON_EXPIRY_DAYS,
@@ -21,10 +20,11 @@ import { AdminDashboard } from './AdminDashboard'
 import { AdminEnquiries } from './AdminEnquiries'
 import { AdminOrders } from './AdminOrders'
 import { AdminShell } from './AdminShell'
+import { AdminCatalogue } from './AdminCatalogue'
+import { AdminSocialLinks } from './AdminSocialLinks'
+import { mirrorContactToNavbarFooter } from '../utils/siteContact'
+import { syncLegacyCatalogueFromItems } from '../utils/catalogue'
 import './AdminPanel.css'
-
-const CATALOGUE_STORAGE_PATH = 'catalogue/eye10-catalogue.pdf'
-const MAX_PDF_BYTES = 24 * 1024 * 1024
 
 const TAB_HEADER = {
   overview: {
@@ -35,6 +35,7 @@ const TAB_HEADER = {
   orders: { title: 'Orders', subtitle: 'Checkout orders, line items, and fulfilment status.' },
   content: { title: 'Website content', subtitle: 'Brand copy, hero, contact, footer, event banner.' },
   catalogue: { title: 'Catalogue PDF', subtitle: 'Upload and publish the downloadable catalogue.' },
+  social: { title: 'Social links', subtitle: 'Facebook, Instagram, X, and YouTube URLs for the footer.' },
   products: { title: 'Products', subtitle: 'Full CRUD for the Firestore products collection.' },
   featured: { title: 'Featured products', subtitle: 'Homepage featured grid (up to 8).' },
   banners: { title: 'Home banners', subtitle: 'Homepage offer slider (images or video).' },
@@ -55,7 +56,6 @@ function AdminPanel() {
     window.scrollTo(0, 0)
   }, [tab])
 
-  const [pdfUploading, setPdfUploading] = useState(false)
   const [couponCodeInput, setCouponCodeInput] = useState('')
   const [couponLookup, setCouponLookup] = useState(null)
   const [allProducts, setAllProducts] = useState([])
@@ -109,97 +109,14 @@ function AdminPanel() {
     e.preventDefault()
     setSaving(true)
     try {
-      await saveContent(mergeSiteContent(draft))
+      const synced = syncLegacyCatalogueFromItems(mirrorContactToNavbarFooter(draft))
+      setDraft(synced)
+      await saveContent(mergeSiteContent(synced))
       toast.success('Website content updated')
     } catch (error) {
       toast.error(error?.message || 'Failed to save content')
     } finally {
       setSaving(false)
-    }
-  }
-
-  const handleSaveCatalogueOnly = async () => {
-    setSaving(true)
-    try {
-      await saveContent(mergeSiteContent(draft))
-      toast.success('Catalogue settings saved')
-    } catch (error) {
-      toast.error(error?.message || 'Failed to save')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleCatalogueFile = async (e) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    if (!storage || !auth?.currentUser) {
-      toast.error('Sign in and ensure Firebase Storage is enabled.')
-      return
-    }
-    if (file.type !== 'application/pdf') {
-      toast.error('Please choose a PDF file.')
-      return
-    }
-    if (file.size > MAX_PDF_BYTES) {
-      toast.error('PDF must be under 25 MB.')
-      return
-    }
-    setPdfUploading(true)
-    try {
-      const storageRef = ref(storage, CATALOGUE_STORAGE_PATH)
-      await uploadBytes(storageRef, file, { contentType: 'application/pdf' })
-      const url = await getDownloadURL(storageRef)
-      const nextCatalogue = {
-        ...(draft.catalogue || {}),
-        pdfUrl: url,
-        storagePath: CATALOGUE_STORAGE_PATH,
-        fileName: file.name,
-        updatedAt: new Date().toISOString(),
-      }
-      const merged = mergeSiteContent({ ...draft, catalogue: nextCatalogue })
-      await saveContent(merged)
-      setDraft(merged)
-      toast.success('Catalogue PDF uploaded and published.')
-    } catch (err) {
-      console.error(err)
-      toast.error(
-        err?.code === 'storage/unauthorized'
-          ? 'Upload denied: deploy storage.rules from the repo and ensure your user is in Firestore admins/{uid}.'
-          : err?.message || 'Upload failed.'
-      )
-    } finally {
-      setPdfUploading(false)
-    }
-  }
-
-  const handleRemoveCatalogue = async () => {
-    if (!storage) {
-      toast.error('Firebase Storage is not available.')
-      return
-    }
-    const path = (draft.catalogue?.storagePath || '').trim()
-    if (path) {
-      try {
-        await deleteObject(ref(storage, path))
-      } catch (err) {
-        console.warn(err)
-      }
-    }
-    const merged = mergeSiteContent({
-      ...draft,
-      catalogue: {
-        ...defaultSiteContent.catalogue,
-        title: draft.catalogue?.title || defaultSiteContent.catalogue.title,
-      },
-    })
-    try {
-      await saveContent(merged)
-      setDraft(merged)
-      toast.success('Catalogue removed from the website.')
-    } catch (error) {
-      toast.error(error?.message || 'Failed to update')
     }
   }
 
@@ -235,8 +152,6 @@ function AdminPanel() {
     toast.success('Coupon redeemed successfully')
   }
 
-  const cat = draft.catalogue || defaultSiteContent.catalogue
-  const hasLivePdf = Boolean((cat.pdfUrl || '').trim())
   const shellHeader = TAB_HEADER[tab] || TAB_HEADER.overview
 
   if (loading) {
@@ -338,100 +253,23 @@ function AdminPanel() {
         )}
 
         {tab === 'catalogue' && (
-          <div className="card admin-card">
-            <h2>Product catalogue (PDF)</h2>
-            <p className="admin-muted">
-              Upload a PDF to Firebase Storage (public download). Shoppers see it on Brands, Products, and
-              the footer. Deploy <code>storage.rules</code> from this repo (see Firebase Console or{' '}
-              <code>npm run firebase:deploy:storage</code>).
-            </p>
+          <AdminCatalogue
+            draft={draft}
+            setDraft={setDraft}
+            saving={saving}
+            setSaving={setSaving}
+            saveContent={saveContent}
+          />
+        )}
 
-            <div style={{ display: 'block', marginTop: '16px' }}>
-              <span style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Button label (site)</span>
-              <input
-                className="input"
-                style={{ width: '100%' }}
-                value={cat.title || ''}
-                onChange={(e) => setField('catalogue', 'title', e.target.value)}
-                placeholder="e.g. Download catalogue"
-              />
-            </div>
-
-            <div className="admin-catalogue-drop" style={{ marginTop: '16px' }}>
-              <p style={{ marginBottom: '12px', fontWeight: 600 }}>Upload PDF (replaces previous file)</p>
-              <input
-                type="file"
-                accept="application/pdf,.pdf"
-                className="admin-catalogue-file"
-                disabled={pdfUploading || !storage}
-                onChange={handleCatalogueFile}
-              />
-              <p className="admin-muted" style={{ marginTop: '10px', marginBottom: 0 }}>
-                {pdfUploading ? 'Uploading…' : 'Max 25 MB. Stored at catalogue/eye10-catalogue.pdf'}
-              </p>
-            </div>
-
-            <div style={{ marginTop: '8px' }}>
-              <span style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
-                Or paste a public PDF URL (optional)
-              </span>
-              <input
-                className="input"
-                style={{ width: '100%' }}
-                value={cat.pdfUrl || ''}
-                onChange={(e) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    catalogue: {
-                      ...(prev.catalogue || {}),
-                      pdfUrl: e.target.value,
-                      storagePath: '',
-                    },
-                  }))
-                }
-                placeholder="https://…"
-              />
-              <p className="admin-muted" style={{ marginTop: '8px' }}>
-                Editing this clears the storage path reference; upload again to host the file on Firebase.
-              </p>
-            </div>
-
-            <div className="admin-actions-row">
-              <button type="button" className="btn btn-primary" disabled={saving} onClick={handleSaveCatalogueOnly}>
-                Save catalogue settings
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline"
-                disabled={!hasLivePdf}
-                onClick={() => void handleRemoveCatalogue()}
-              >
-                Remove PDF from site
-              </button>
-            </div>
-
-            {hasLivePdf && (
-              <div className="admin-status-box">
-                <strong>Live link</strong>
-                <div style={{ marginTop: '8px' }}>
-                  <a href={cat.pdfUrl} target="_blank" rel="noopener noreferrer">
-                    Open PDF
-                  </a>
-                </div>
-                {cat.fileName ? (
-                  <p style={{ marginTop: '8px', marginBottom: 0 }}>
-                    File: {cat.fileName}
-                    {cat.updatedAt ? ` · Updated ${new Date(cat.updatedAt).toLocaleString()}` : ''}
-                  </p>
-                ) : null}
-                {cat.storagePath ? (
-                  <p style={{ marginTop: '6px', marginBottom: 0, fontSize: '12px', opacity: 0.85 }}>
-                    Storage: {cat.storagePath}
-                  </p>
-                ) : null}
-              </div>
-            )}
-          </div>
+        {tab === 'social' && (
+          <AdminSocialLinks
+            draft={draft}
+            setDraft={setDraft}
+            saveContent={saveContent}
+            saving={saving}
+            setSaving={setSaving}
+          />
         )}
 
         {tab === 'content' && (
@@ -555,18 +393,22 @@ function AdminPanel() {
               placeholder="Brands section subtitle"
             />
 
-            <h2>Contact</h2>
+            <h2>Contact details (site-wide)</h2>
+            <p className="admin-muted" style={{ marginTop: 0 }}>
+              One place for phone, WhatsApp, email, and address. Saving updates the navbar, footer, contact page,
+              and all WhatsApp / call links together.
+            </p>
             <input
               className="input"
-              value={draft.navbar?.phone || ''}
-              onChange={(e) => setField('navbar', 'phone', e.target.value)}
-              placeholder="Navbar phone"
+              value={draft.contact?.phone || ''}
+              onChange={(e) => setField('contact', 'phone', e.target.value)}
+              placeholder="Phone (shown in navbar, footer, contact)"
             />
             <input
               className="input"
               value={draft.contact?.whatsappNumber || ''}
               onChange={(e) => setField('contact', 'whatsappNumber', e.target.value)}
-              placeholder="WhatsApp number (digits)"
+              placeholder="WhatsApp number (digits only, with country code if needed)"
             />
             <input
               className="input"
@@ -576,38 +418,22 @@ function AdminPanel() {
             />
             <textarea
               className="input"
-              rows={2}
+              rows={3}
               value={draft.contact?.address || ''}
               onChange={(e) => setField('contact', 'address', e.target.value)}
-              placeholder="Address"
+              placeholder="Full address (navbar links, footer, contact page)"
             />
 
             <h2>Footer</h2>
+            <p className="admin-muted" style={{ marginTop: 0 }}>
+              Footer text only — phone, email, and address come from Contact details above.
+            </p>
             <textarea
               className="input"
               rows={3}
               value={draft.footer?.description || ''}
               onChange={(e) => setField('footer', 'description', e.target.value)}
               placeholder="Footer description"
-            />
-            <input
-              className="input"
-              value={draft.footer?.phone || ''}
-              onChange={(e) => setField('footer', 'phone', e.target.value)}
-              placeholder="Footer phone"
-            />
-            <input
-              className="input"
-              value={draft.footer?.email || ''}
-              onChange={(e) => setField('footer', 'email', e.target.value)}
-              placeholder="Footer email"
-            />
-            <textarea
-              className="input"
-              rows={2}
-              value={draft.footer?.address || ''}
-              onChange={(e) => setField('footer', 'address', e.target.value)}
-              placeholder="Footer address"
             />
 
             <h2>Event banner</h2>

@@ -4,6 +4,7 @@
 @import url('./styles/modern-enhancements.css');
 @import url('./styles/three-d-modern.css');
 @import url('./components/PageTransition.css');
+@import url('./styles/mobile-ui.css');
 
 * {
   margin: 0;

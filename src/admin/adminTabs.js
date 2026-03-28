@@ -5,6 +5,7 @@ export const ADMIN_TAB_KEYS = [
   'orders',
   'content',
   'catalogue',
+  'social',
   'products',
   'featured',
   'banners',

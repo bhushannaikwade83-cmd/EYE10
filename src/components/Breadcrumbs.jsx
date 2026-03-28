@@ -12,6 +12,8 @@ function Breadcrumbs() {
       products: 'Products',
       product: 'Product Details',
       contact: 'Contact Us',
+      services: 'Services',
+      about: 'About Us',
       cart: 'Shopping Cart',
       checkout: 'Checkout',
     }

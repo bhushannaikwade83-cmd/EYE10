@@ -12,6 +12,7 @@ import { addToRecentlyViewed, addToWishlist, removeFromWishlist, isInWishlist } 
 import { addToComparison } from '../components/ProductComparison'
 import { addPriceAlert } from '../components/PriceDropAlerts'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
+import { getSitePhone, getSiteWhatsAppDigits } from '../utils/siteContact'
 import { getSampleProductById } from '../utils/sampleProducts'
 import { normalizeBenefitList, normalizeFeatureList } from '../utils/productDoc'
 import { useSiteContent } from '../context/SiteContentContext'
@@ -26,8 +27,8 @@ function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [isFavorite, setIsFavorite] = useState(false)
   const { content } = useSiteContent()
-  const whatsappUrl = buildWhatsAppUrl(content?.contact?.whatsappNumber)
-  const callPhone = content?.navbar?.phone || '+91 99999 99999'
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+  const callPhone = getSitePhone(content)
 
   useEffect(() => {
     const fetchProduct = async () => {

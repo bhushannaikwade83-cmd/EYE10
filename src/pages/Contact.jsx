@@ -4,10 +4,21 @@ import { db } from '../firebase/config'
 import { MapPin, Phone, Mail, MessageSquare, User, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { saveLastInquiryContact } from '../utils/inquiryContact'
+import { useSiteContent } from '../context/SiteContentContext'
+import { buildWhatsAppUrl } from '../utils/whatsapp'
+import { getSitePhone, getSiteEmail, getSiteAddress, getSiteWhatsAppDigits } from '../utils/siteContact'
 import EnquiryForm from '../components/EnquiryForm'
 import './Contact.css'
 
 function Contact() {
+  const { content } = useSiteContent()
+  const displayPhone = getSitePhone(content)
+  const displayEmail = getSiteEmail(content)
+  const displayAddress = getSiteAddress(content)
+  const telHref = `tel:${displayPhone.replace(/\s+/g, '')}`
+  const mailHref = `mailto:${displayEmail}`
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -74,34 +85,17 @@ function Contact() {
             <div className="contact-info">
               <div className="info-card">
                 <MapPin size={32} className="info-icon" />
-                <h3>Main Branch</h3>
-                <p>
-                  123 Main Street<br />
-                  City, State - 123456<br />
-                  India
-                </p>
-                <a href="tel:+919999999999" className="branch-phone">+91 99999 99999</a>
-              </div>
-
-              <div className="info-card">
-                <MapPin size={32} className="info-icon" />
-                <h3>Second Branch</h3>
-                <p>
-                  456 Market Road<br />
-                  City, State - 123456<br />
-                  India
-                </p>
-                <a href="tel:+919999999998" className="branch-phone">+91 99999 99998</a>
+                <h3>Visit Us</h3>
+                <p className="contact-address-block">{displayAddress}</p>
               </div>
 
               <div className="info-card">
                 <Phone size={32} className="info-icon" />
                 <h3>Call Us</h3>
                 <p>
-                  <a href="tel:+919999999999">+91 99999 99999</a>
-                </p>
-                <p>
-                  <a href="tel:+919999999998">+91 99999 99998</a>
+                  <a href={telHref} className="branch-phone">
+                    {displayPhone}
+                  </a>
                 </p>
               </div>
 
@@ -109,10 +103,17 @@ function Contact() {
                 <Mail size={32} className="info-icon" />
                 <h3>Email Us</h3>
                 <p>
-                  <a href="mailto:info@eye10.com">info@eye10.com</a>
+                  <a href={mailHref}>{displayEmail}</a>
                 </p>
+              </div>
+
+              <div className="info-card">
+                <MessageSquare size={32} className="info-icon" />
+                <h3>WhatsApp</h3>
                 <p>
-                  <a href="mailto:support@eye10.com">support@eye10.com</a>
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="branch-phone">
+                    Chat on WhatsApp
+                  </a>
                 </p>
               </div>
 

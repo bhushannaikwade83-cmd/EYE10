@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Share2,
 } from 'lucide-react'
 import { adminTabPath, getAdminTabFromLocation } from './adminTabs'
 import './AdminShell.css'
@@ -38,6 +39,7 @@ export function AdminShell({ title, subtitle, rightSlot, children }) {
       { key: 'orders', label: 'Orders', icon: ShoppingBag },
       { key: 'content', label: 'Website content', icon: LayoutDashboard },
       { key: 'catalogue', label: 'Catalogue PDF', icon: FileText },
+      { key: 'social', label: 'Social links', icon: Share2 },
       { key: 'products', label: 'Products', icon: Package },
       { key: 'featured', label: 'Featured', icon: Star },
       { key: 'banners', label: 'Home banners', icon: ImageIcon },

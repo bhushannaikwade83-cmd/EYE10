@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ArrowUp } from 'lucide-react'
 import './ScrollToTop.css'
 
 function ScrollToTop() {
+  const { pathname, search } = useLocation()
   const [isVisible, setIsVisible] = useState(false)
+
+  /** Every client-side navigation (footer, nav, etc.) starts at the top of the new page. */
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname, search])
 
   useEffect(() => {
     const toggleVisibility = () => {

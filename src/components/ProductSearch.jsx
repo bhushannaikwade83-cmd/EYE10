@@ -83,13 +83,14 @@ function ProductSearch({ products, onFilterChange }) {
     <div className="product-search">
       <div className="search-bar-wrapper">
         <div className="search-input-container">
-          <Search className="search-icon" size={20} />
+          <Search className="search-icon" size={22} strokeWidth={2.25} />
           <input
             type="text"
-            placeholder="Search products, brands, or descriptions..."
+            placeholder="Search glasses"
             value={searchTerm}
             onChange={handleSearch}
             className="search-input"
+            autoComplete="off"
           />
           {searchTerm && (
             <button onClick={() => setSearchTerm('')} className="clear-search">

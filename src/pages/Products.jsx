@@ -7,6 +7,7 @@ import ProductFilters from '../components/ProductFilters'
 import { Filter, X, FileText } from 'lucide-react'
 import { getSampleProducts } from '../utils/sampleProducts'
 import { useSiteContent } from '../context/SiteContentContext'
+import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
 import './Products.css'
 
 function Products() {
@@ -66,6 +67,7 @@ function Products() {
   const categories = [...new Set(products.map((p) => p.category).filter(Boolean))]
   const brands = [...new Set(products.map((p) => p.brand).filter(Boolean))]
 
+  const catalogueItems = getCatalogueItems(content)
 
   return (
     <main>
@@ -78,18 +80,27 @@ function Products() {
             </p>
           </div>
 
-          {(content?.catalogue?.pdfUrl || '').trim() ? (
+          {catalogueItems.length > 0 ? (
             <div className="products-catalogue-banner">
               <p>Browse the full frame &amp; lens catalogue (PDF).</p>
-              <a
-                className="btn btn-outline products-catalogue-link"
-                href={(content.catalogue.pdfUrl || '').trim()}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FileText size={18} aria-hidden />
-                {(content.catalogue.title || 'Download catalogue').trim() || 'Download catalogue'}
-              </a>
+              <div className="products-catalogue-links">
+                {catalogueItems.map((item) => (
+                  <a
+                    key={item.id}
+                    className="btn btn-outline products-catalogue-link"
+                    href={item.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      void openCataloguePdfInNewTabAndDownload(item)
+                    }}
+                  >
+                    <FileText size={18} aria-hidden />
+                    {(item.title || item.brandName || 'Catalogue').trim() || 'Catalogue'}
+                  </a>
+                ))}
+              </div>
             </div>
           ) : null}
           

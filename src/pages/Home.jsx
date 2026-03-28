@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { collection, documentId, getDocs, limit, query, where } from 'firebase/firestore'
 import { db } from '../firebase/config'
 import ProductCard from '../components/ProductCard'
 import HomeOffersSlider from '../components/HomeOffersSlider'
-import About from '../components/About'
-import Services from '../components/Services'
 import Brands from '../components/Brands'
 import Testimonials from '../components/Testimonials'
 import GoogleReviewAssistant from '../components/GoogleReviewAssistant'
@@ -15,16 +13,20 @@ import FAQ from '../components/FAQ'
 import Newsletter from '../components/Newsletter'
 import StatsCounter from '../components/StatsCounter'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
+import { getSiteWhatsAppDigits } from '../utils/siteContact'
 import { getSampleProducts } from '../utils/sampleProducts'
 import { useSiteContent } from '../context/SiteContentContext'
+import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
 import './Home.css'
 
 function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const { content } = useSiteContent()
-  const whatsappUrl = buildWhatsAppUrl(content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
   const featuredIdsKey = (content?.featuredProductIds || []).filter(Boolean).join(',')
+  const catalogueItems = getCatalogueItems(content)
+  const primaryCatalogue = catalogueItems[0]
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -94,6 +96,16 @@ function Home() {
               <Link to="/products" className="btn btn-outline">
                 Browse Products
               </Link>
+              {primaryCatalogue ? (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => void openCataloguePdfInNewTabAndDownload(primaryCatalogue)}
+                >
+                  <FileText size={20} aria-hidden />
+                  {(primaryCatalogue.title || primaryCatalogue.brandName || 'Catalogue').trim() || 'Catalogue'}
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -125,10 +137,6 @@ function Home() {
       </section>
 
       <Brands />
-
-      <About />
-
-      <Services />
 
       <GoogleReviewAssistant />
 
