@@ -101,6 +101,21 @@
   box-shadow: 0 0 0 2px rgb(var(--primary-rgb) / 0.20);
 }
 
+.video-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.product-video-thumb {
+  width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  background: #000;
+}
+
 .product-info {
   display: flex;
   flex-direction: column;

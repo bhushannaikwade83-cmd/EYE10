@@ -120,6 +120,7 @@ function ProductDetail() {
       ? product.images.filter(Boolean)
       : [product.image].filter(Boolean)
   const mainImage = imageList[0] || 'https://via.placeholder.com/600?text=EYE10'
+  const videoList = Array.isArray(product.videos) ? product.videos.filter(Boolean) : []
   const featureList = normalizeFeatureList(product)
   const benefitList = normalizeBenefitList(product)
   const rating =
@@ -162,6 +163,21 @@ function ProductDetail() {
                       alt={`${product.name} ${index + 1}`}
                       className={selectedImage === index ? 'active' : ''}
                       onClick={() => setSelectedImage(index)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {videoList.length > 0 && (
+                <div className="video-thumbnails">
+                  {videoList.map((src, idx) => (
+                    <video
+                      key={`${src}-${idx}`}
+                      src={src}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="product-video-thumb"
                     />
                   ))}
                 </div>

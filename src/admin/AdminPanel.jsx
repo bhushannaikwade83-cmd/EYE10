@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { getAdminTabFromLocation } from './adminTabs'
 import { signOut } from 'firebase/auth'
 import { collection, getDocs, limit, query } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
@@ -14,16 +16,45 @@ import {
 } from '../utils/googleReviews'
 import { AdminFeaturedProducts } from './AdminFeaturedProducts'
 import { AdminHomeBanners } from './AdminHomeBanners'
+import { AdminProducts } from './AdminProducts'
+import { AdminDashboard } from './AdminDashboard'
+import { AdminEnquiries } from './AdminEnquiries'
+import { AdminOrders } from './AdminOrders'
+import { AdminShell } from './AdminShell'
 import './AdminPanel.css'
 
 const CATALOGUE_STORAGE_PATH = 'catalogue/eye10-catalogue.pdf'
 const MAX_PDF_BYTES = 24 * 1024 * 1024
 
+const TAB_HEADER = {
+  overview: {
+    title: 'Overview',
+    subtitle: 'Metrics, enquiries pipeline, and orders — plus shortcuts to every admin area.',
+  },
+  enquiries: { title: 'Enquiries', subtitle: 'Contact and product enquiry leads from Firestore.' },
+  orders: { title: 'Orders', subtitle: 'Checkout orders, line items, and fulfilment status.' },
+  content: { title: 'Website content', subtitle: 'Brand copy, hero, contact, footer, event banner.' },
+  catalogue: { title: 'Catalogue PDF', subtitle: 'Upload and publish the downloadable catalogue.' },
+  products: { title: 'Products', subtitle: 'Full CRUD for the Firestore products collection.' },
+  featured: { title: 'Featured products', subtitle: 'Homepage featured grid (up to 8).' },
+  banners: { title: 'Home banners', subtitle: 'Homepage offer slider (images or video).' },
+  coupons: { title: 'Coupons', subtitle: 'Google Review campaign coupon verification.' },
+}
+
 function AdminPanel() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const { content, loading, saveContent } = useSiteContent()
   const [draft, setDraft] = useState(content)
   const [saving, setSaving] = useState(false)
-  const [tab, setTab] = useState('content')
+
+  // Must depend on `location.search` (string). `useSearchParams()`'s URLSearchParams ref can fail to trigger updates.
+  const tab = useMemo(() => getAdminTabFromLocation(location.search), [location.search])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [tab])
+
   const [pdfUploading, setPdfUploading] = useState(false)
   const [couponCodeInput, setCouponCodeInput] = useState('')
   const [couponLookup, setCouponLookup] = useState(null)
@@ -174,6 +205,7 @@ function AdminPanel() {
 
   const handleLogout = async () => {
     if (auth) await signOut(auth)
+    navigate('/admin/login')
     toast.success('Logged out')
   }
 
@@ -205,103 +237,58 @@ function AdminPanel() {
 
   const cat = draft.catalogue || defaultSiteContent.catalogue
   const hasLivePdf = Boolean((cat.pdfUrl || '').trim())
+  const shellHeader = TAB_HEADER[tab] || TAB_HEADER.overview
 
   if (loading) {
     return (
-      <main className="admin-panel">
+      <div className="admin-panel admin-panel--loading">
         <div className="container" style={{ paddingTop: '160px', textAlign: 'center' }}>
           Loading admin content...
         </div>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="admin-panel">
-      <div className="container">
-        <div className="card admin-panel-header">
-          <div>
-            <h1 style={{ marginBottom: '8px' }}>Admin Panel</h1>
-            <p className="admin-muted" style={{ margin: 0 }}>
-              Manage site copy, catalogue PDF, featured products, home banners, and coupon verification.
-              Changes publish to Firestore.
-            </p>
-          </div>
-          <button type="button" className="btn btn-outline" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
+    <AdminShell
+      title={shellHeader.title}
+      subtitle={shellHeader.subtitle}
+      rightSlot={
+        <button type="button" className="btn btn-outline" onClick={handleLogout}>
+          Logout
+        </button>
+      }
+    >
+      {tab === 'overview' && <AdminDashboard />}
 
-        <div className="admin-tabs" role="tablist" aria-label="Admin sections">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'content'}
-            className={`admin-tab ${tab === 'content' ? 'active' : ''}`}
-            onClick={() => setTab('content')}
-          >
-            Website content
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'catalogue'}
-            className={`admin-tab ${tab === 'catalogue' ? 'active' : ''}`}
-            onClick={() => setTab('catalogue')}
-          >
-            Catalogue PDF
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'featured'}
-            className={`admin-tab ${tab === 'featured' ? 'active' : ''}`}
-            onClick={() => setTab('featured')}
-          >
-            Featured
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'banners'}
-            className={`admin-tab ${tab === 'banners' ? 'active' : ''}`}
-            onClick={() => setTab('banners')}
-          >
-            Home banners
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'coupons'}
-            className={`admin-tab ${tab === 'coupons' ? 'active' : ''}`}
-            onClick={() => setTab('coupons')}
-          >
-            Coupons
-          </button>
-        </div>
+      {tab === 'enquiries' && <AdminEnquiries />}
 
-        {tab === 'featured' && (
-          <AdminFeaturedProducts
-            draft={draft}
-            setDraft={setDraft}
-            saveContent={saveContent}
-            allProducts={allProducts}
-            saving={saving}
-            setSaving={setSaving}
-          />
-        )}
+      {tab === 'orders' && <AdminOrders />}
 
-        {tab === 'banners' && (
-          <AdminHomeBanners
-            draft={draft}
-            setDraft={setDraft}
-            saveContent={saveContent}
-            saving={saving}
-            setSaving={setSaving}
-          />
-        )}
+      {tab === 'featured' && (
+        <AdminFeaturedProducts
+          draft={draft}
+          setDraft={setDraft}
+          saveContent={saveContent}
+          allProducts={allProducts}
+          saving={saving}
+          setSaving={setSaving}
+        />
+      )}
 
-        {tab === 'coupons' && (
+      {tab === 'banners' && (
+        <AdminHomeBanners
+          draft={draft}
+          setDraft={setDraft}
+          saveContent={saveContent}
+          saving={saving}
+          setSaving={setSaving}
+        />
+      )}
+
+      {tab === 'products' && <AdminProducts />}
+
+      {tab === 'coupons' && (
           <div className="card admin-card">
             <h2>Coupon verification (billing)</h2>
             <p className="admin-muted">
@@ -680,8 +667,7 @@ function AdminPanel() {
             </button>
           </form>
         )}
-      </div>
-    </main>
+    </AdminShell>
   )
 }
 

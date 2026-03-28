@@ -13,6 +13,11 @@ main {
   z-index: 1;
 }
 
+/* No public navbar on /admin — remove gap so shell isn’t pushed “below” empty space */
+main.main--admin {
+  padding-top: 0;
+}
+
 /* Add extra padding when breadcrumbs are present */
 body.has-breadcrumbs main {
   padding-top: 155px;

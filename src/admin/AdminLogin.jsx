@@ -4,6 +4,7 @@ import { auth, isFirebaseConfigured } from '../firebase/config'
 import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { isFirestoreAdmin } from '../utils/adminAccess'
+import { AdminShell } from './AdminShell'
 import './AdminLogin.css'
 
 function loginErrorMessage(error) {
@@ -93,10 +94,14 @@ function AdminLogin() {
   }
 
   return (
-    <main>
-      <div className="container" style={{ paddingTop: '140px', paddingBottom: '80px' }}>
-        <div className="card" style={{ maxWidth: '480px', margin: '0 auto' }}>
-          <h1 style={{ marginBottom: '8px' }}>Admin Login</h1>
+    <AdminShell
+      title="Admin login"
+      subtitle="Sign in with an admin user from Firebase Authentication."
+      rightSlot={null}
+    >
+      <div className="admin-login">
+        <div className="admin-login-card card">
+          <h2 style={{ marginBottom: '8px' }}>Admin Login</h2>
           {!auth && (
             <p
               style={{
@@ -164,7 +169,7 @@ function AdminLogin() {
           </form>
         </div>
       </div>
-    </main>
+    </AdminShell>
   )
 }
 

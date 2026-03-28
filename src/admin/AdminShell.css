@@ -1,0 +1,217 @@
+.admin-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgb(var(--light-rgb) / 0.28), rgb(var(--light-rgb) / 0.12));
+}
+
+.admin-shell__topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.admin-shell__menu {
+  display: none;
+}
+
+.admin-shell__iconbtn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.admin-shell__title {
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-shell__title h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.admin-shell__title p {
+  margin: 4px 0 0;
+  color: var(--gray-dark);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.admin-shell__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-shell__body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 72px);
+}
+
+.admin-shell__sidebar {
+  border-right: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+  padding: 16px;
+}
+
+.admin-shell__nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.admin-shell__brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 10px 14px;
+  border-bottom: 1px solid rgb(var(--primary-rgb) / 0.1);
+  margin-bottom: 12px;
+}
+
+.admin-shell__brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.admin-shell__brand-text strong {
+  display: block;
+  font-size: 14px;
+}
+
+.admin-shell__brand-text span {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-dark);
+}
+
+.admin-shell__navlist {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-shell__navitem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dark);
+  font-weight: 700;
+  text-align: left;
+  min-height: 44px;
+  touch-action: manipulation;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.admin-shell__navitem:hover {
+  background: rgb(var(--primary-rgb) / 0.06);
+  border-color: rgb(var(--primary-rgb) / 0.12);
+}
+
+.admin-shell__navitem.active {
+  background: rgb(var(--primary-rgb) / 0.1);
+  border-color: rgb(var(--primary-rgb) / 0.25);
+  color: var(--primary);
+}
+
+.admin-shell__navfooter {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.admin-shell__navlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gray-dark);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--white);
+}
+
+.admin-shell__content {
+  padding: 18px;
+  max-width: 1120px;
+  width: 100%;
+}
+
+.admin-shell__content .card {
+  box-shadow: none;
+}
+
+.admin-shell__content .card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.admin-shell__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(6px);
+  padding: 10px;
+}
+
+.admin-shell__drawer {
+  width: min(340px, 100%);
+  height: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: auto;
+  padding: 14px;
+}
+
+@media (max-width: 980px) {
+  .admin-shell__body {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-shell__sidebar {
+    display: none;
+  }
+
+  .admin-shell__menu {
+    display: inline-flex;
+  }
+
+  .admin-shell__content {
+    padding: 14px;
+    max-width: 100%;
+  }
+}
+

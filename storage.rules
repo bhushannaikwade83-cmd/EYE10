@@ -30,5 +30,30 @@ service firebase.storage {
         && isHomeBannerMediaType();
       allow delete: if isAdmin();
     }
+
+    function isProductImageType() {
+      let ct = request.resource.contentType;
+      return ct == 'image/jpeg' || ct == 'image/png';
+    }
+
+    function isProductVideoType() {
+      let ct = request.resource.contentType;
+      return ct == 'video/mp4'
+        || ct == 'video/webm'
+        || ct == 'video/quicktime';
+    }
+
+    match /product-media/{productId}/{mediaType}/{fileName} {
+      // Public read for storefront images/videos
+      allow read: if true;
+
+      // Admin-only writes/deletes with content-type + size limits
+      allow write: if isAdmin()
+        && (
+          (mediaType == 'images' && isProductImageType() && request.resource.size < 10 * 1024 * 1024)
+          || (mediaType == 'videos' && isProductVideoType() && request.resource.size < 45 * 1024 * 1024)
+        );
+      allow delete: if isAdmin();
+    }
   }
 }
