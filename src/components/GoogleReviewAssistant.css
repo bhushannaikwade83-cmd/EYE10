@@ -140,29 +140,45 @@
 }
 
 .coupon-wheel-wrap {
+  --wheel-size: min(300px, calc(100vw - 48px));
+  --wheel-label-offset: 108px;
   position: relative;
-  width: 280px;
+  width: var(--wheel-size);
+  max-width: 100%;
   margin: 12px auto 20px;
 }
 
 .coupon-wheel-pointer {
   text-align: center;
   color: var(--dark);
-  font-size: 26px;
+  font-size: clamp(20px, 5vw, 26px);
   line-height: 1;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 800;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.12));
 }
 
 .coupon-wheel {
-  width: 280px;
-  height: 280px;
+  width: var(--wheel-size);
+  height: var(--wheel-size);
+  position: relative;
+  margin: 0 auto;
+  transition: transform 3.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow: visible;
+  will-change: transform;
+}
+
+.coupon-wheel-disk {
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
   border: 8px solid var(--white);
-  box-shadow: var(--shadow-md);
-  position: relative;
-  transition: transform 3.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow:
+    0 12px 32px rgb(0 0 0 / 0.12),
+    0 4px 12px rgb(0 0 0 / 0.08),
+    inset 0 2px 0 rgb(255 255 255 / 0.5);
   overflow: hidden;
+  pointer-events: none;
 }
 
 .coupon-wheel-label {
@@ -170,40 +186,56 @@
   left: 50%;
   top: 50%;
   transform-origin: 0 0;
-  width: 94px;
-  margin-top: -12px;
+  width: min(100px, 32vw);
+  max-width: 104px;
+  margin-top: 0;
   text-align: center;
   pointer-events: none;
+  z-index: 2;
 }
 
 .coupon-wheel-label-text {
   display: block;
-  font-size: 12px;
-  line-height: 1.15;
+  font-size: clamp(10px, 3.1vw, 12px);
+  line-height: 1.2;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   color: #111827;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
   transform: rotate(calc(-1 * var(--label-angle)));
+  hyphens: auto;
+  word-break: break-word;
+  padding: 0 2px;
 }
 
 @media (max-width: 520px) {
   .coupon-wheel-wrap {
-    width: 240px;
-  }
-
-  .coupon-wheel {
-    width: 240px;
-    height: 240px;
+    --wheel-size: min(272px, calc(100vw - 40px));
+    --wheel-label-offset: 96px;
   }
 
   .coupon-wheel-label {
-    width: 80px;
-    margin-top: -11px;
+    width: min(92px, 30vw);
   }
 
   .coupon-wheel-label-text {
-    font-size: 11px;
+    font-size: clamp(9px, 2.9vw, 11px);
+    line-height: 1.18;
+  }
+
+  .coupon-flow-card {
+    padding: 16px 14px;
+  }
+
+  .coupon-flow-card h3 {
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 380px) {
+  .coupon-wheel-wrap {
+    --wheel-label-offset: 88px;
   }
 }
 
@@ -212,6 +244,19 @@
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .coupon-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .coupon-actions .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
 }
 
 .coupon-result {

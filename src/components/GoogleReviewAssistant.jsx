@@ -74,8 +74,9 @@ function GoogleReviewAssistant() {
     [selected, rating]
   )
 
-  const couponWheelStyle = useMemo(() => {
-    const segmentAngle = 360 / couponOptions.length
+  const segmentAngle = 360 / couponOptions.length
+
+  const couponWheelDiskStyle = useMemo(() => {
     const colors = ['#e0f2fe', '#fae8ff']
     const gradients = couponOptions
       .map((_, index) => {
@@ -87,9 +88,15 @@ function GoogleReviewAssistant() {
 
     return {
       background: `conic-gradient(${gradients})`,
-      transform: `rotate(${wheelRotation}deg)`,
     }
-  }, [couponOptions, wheelRotation])
+  }, [couponOptions, segmentAngle])
+
+  const couponWheelSpinStyle = useMemo(
+    () => ({
+      transform: `rotate(${wheelRotation}deg)`,
+    }),
+    [wheelRotation]
+  )
 
   const toggleOption = (option) => {
     setSelected((prev) =>
@@ -315,15 +322,18 @@ function GoogleReviewAssistant() {
             </p>
 
             <div className="coupon-wheel-wrap">
-              <div className="coupon-wheel-pointer">▼</div>
-              <div className="coupon-wheel" style={couponWheelStyle}>
+              <div className="coupon-wheel-pointer" aria-hidden>
+                ▼
+              </div>
+              <div className="coupon-wheel" style={couponWheelSpinStyle}>
+                <div className="coupon-wheel-disk" style={couponWheelDiskStyle} aria-hidden />
                 {couponOptions.map((option, index) => (
                   <span
                     key={option.label}
                     className="coupon-wheel-label"
                     style={{
-                      '--label-angle': `${index * (360 / couponOptions.length)}deg`,
-                      transform: `rotate(${index * (360 / couponOptions.length)}deg) translateX(76px) translateY(-50%)`,
+                      '--label-angle': `${index * segmentAngle}deg`,
+                      transform: `rotate(${index * segmentAngle}deg) translateX(var(--wheel-label-offset)) translateY(-50%)`,
                     }}
                   >
                     <span className="coupon-wheel-label-text">{option.label}</span>
