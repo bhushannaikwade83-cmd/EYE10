@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
-import { auth, db } from '../firebase/config'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { supabase } from '../supabase/client'
 import { CreditCard, MapPin, Phone, Mail, User } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './Checkout.css'
@@ -27,19 +26,21 @@ function Checkout() {
       navigate('/cart')
     }
 
-    if (auth) {
-      const unsubscribe = auth.onAuthStateChanged((user) => {
-        if (user) {
-          setFormData((prev) => ({
-            ...prev,
-            email: user.email || '',
-            name: user.displayName || '',
-          }))
-        }
-      })
-      return () => unsubscribe()
-    }
-    return undefined
+    if (!supabase) return undefined
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      const user = session?.user
+      if (user) {
+        setFormData((prev) => ({
+          ...prev,
+          email: user.email || '',
+          name:
+            (user.user_metadata && user.user_metadata.full_name) ||
+            user.email?.split('@')[0] ||
+            '',
+        }))
+      }
+    })
+    return () => subscription.unsubscribe()
   }, [cartItems, navigate])
 
   const handleChange = (e) => {
@@ -53,25 +54,27 @@ function Checkout() {
     e.preventDefault()
     setLoading(true)
 
-    if (!db) {
-      toast.error('Orders are unavailable: Firebase is not configured on this deployment.')
+    if (!supabase) {
+      toast.error('Orders are unavailable: Supabase is not configured on this deployment.')
       setLoading(false)
       return
     }
 
     try {
-      const orderData = {
-        userId: auth?.currentUser?.uid || null,
+      const { data: sessionData } = await supabase.auth.getSession()
+      const uid = sessionData.session?.user?.id ?? null
+      const orderPayload = {
+        userId: uid,
         items: cartItems,
         total: getTotalPrice() + (getTotalPrice() >= 999 ? 0 : 99),
         shipping: getTotalPrice() >= 999 ? 0 : 99,
         ...formData,
         status: 'pending',
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
       }
 
-      // Save order to Firestore
-      await addDoc(collection(db, 'orders'), orderData)
+      const { error } = await supabase.from('orders').insert({ data: orderPayload })
+      if (error) throw error
 
       // Clear cart
       clearCart()

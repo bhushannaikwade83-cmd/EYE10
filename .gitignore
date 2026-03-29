@@ -9,6 +9,8 @@ build/
 .env
 .env.local
 .env.*.local
+vercel.env.local
+vercel.env.filled
 
 # Logs
 npm-debug.log*

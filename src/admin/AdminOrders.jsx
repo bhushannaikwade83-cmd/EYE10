@@ -1,17 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  updateDoc,
-} from 'firebase/firestore'
 import { RefreshCw, ShoppingBag, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import './AdminOrders.css'
 
 const STATUS_OPTIONS = [
@@ -52,26 +42,29 @@ export function AdminOrders() {
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
-    if (!db) {
-      setError('Firestore is not configured.')
+    if (!supabase) {
+      setError('Supabase is not configured.')
       setLoading(false)
       return
     }
     setError('')
     setLoading(true)
     try {
-      const snap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')))
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-      setItems(list.slice(0, LIMIT))
+      const { data: rows, error } = await supabase
+        .from('orders')
+        .select('id, data, created_at')
+        .order('created_at', { ascending: false })
+        .limit(LIMIT)
+      if (error) throw error
+      const list = (rows || []).map((r) => ({
+        id: r.id,
+        ...(r.data && typeof r.data === 'object' ? r.data : {}),
+        createdAt: r.created_at,
+      }))
+      setItems(list)
     } catch (e) {
       console.error(e)
-      if (e?.code === 'failed-precondition') {
-        setError(
-          'Firestore index required for orders. Open the link in the browser console to create it, or deploy indexes.'
-        )
-      } else {
-        setError(e?.message || 'Failed to load orders')
-      }
+      setError(e?.message || 'Failed to load orders')
       setItems([])
     } finally {
       setLoading(false)
@@ -103,13 +96,15 @@ export function AdminOrders() {
   }, [items, filter, search])
 
   const updateStatus = async (id, status) => {
-    if (!db) return
+    if (!supabase) return
     setSaving(true)
     try {
-      await updateDoc(doc(db, 'orders', id), {
-        status,
-        updatedAt: serverTimestamp(),
-      })
+      const cur = items.find((x) => x.id === id)
+      if (!cur) return
+      const { id: _i, createdAt: _c, ...rest } = cur
+      const nextData = { ...rest, status, updatedAt: new Date().toISOString() }
+      const { error } = await supabase.from('orders').update({ data: nextData }).eq('id', id)
+      if (error) throw error
       setItems((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x)))
       toast.success('Order status updated')
     } catch (e) {
@@ -121,13 +116,15 @@ export function AdminOrders() {
   }
 
   const saveNote = async () => {
-    if (!selectedId || !db) return
+    if (!selectedId || !supabase) return
     setSaving(true)
     try {
-      await updateDoc(doc(db, 'orders', selectedId), {
-        adminNote: adminNote.trim(),
-        updatedAt: serverTimestamp(),
-      })
+      const cur = items.find((x) => x.id === selectedId)
+      if (!cur) return
+      const { id: _i, createdAt: _c, ...rest } = cur
+      const nextData = { ...rest, adminNote: adminNote.trim(), updatedAt: new Date().toISOString() }
+      const { error } = await supabase.from('orders').update({ data: nextData }).eq('id', selectedId)
+      if (error) throw error
       setItems((prev) =>
         prev.map((x) => (x.id === selectedId ? { ...x, adminNote: adminNote.trim() } : x))
       )
@@ -141,11 +138,12 @@ export function AdminOrders() {
   }
 
   const handleDelete = async (id) => {
-    if (!db) return
+    if (!supabase) return
     const ok = window.confirm('Delete this order record permanently?')
     if (!ok) return
     try {
-      await deleteDoc(doc(db, 'orders', id))
+      const { error } = await supabase.from('orders').delete().eq('id', id)
+      if (error) throw error
       setItems((prev) => prev.filter((x) => x.id !== id))
       if (selectedId === id) setSelectedId('')
       toast.success('Deleted')
@@ -164,7 +162,7 @@ export function AdminOrders() {
             Orders
           </h2>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Checkout orders from the storefront. Collection <code>orders</code>.
+            Checkout orders from the storefront. Table <code>orders</code> (Supabase).
           </p>
         </div>
         <button type="button" className="btn btn-outline" onClick={() => void load()} disabled={loading}>
@@ -320,7 +318,7 @@ export function AdminOrders() {
                     ) : (
                       <tr>
                         <td colSpan={3} className="admin-muted">
-                          No line items stored on this document.
+                          No line items stored on this order.
                         </td>
                       </tr>
                     )}

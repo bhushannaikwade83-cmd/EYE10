@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { resolveB2MediaUrl } from '../utils/b2PrivateUrls'
 import './HomeOffersSlider.css'
 
 const AUTO_MS = 6000
@@ -11,6 +12,23 @@ function HomeOffersSlider({ homeBanners = [] }) {
   const slides = (homeBanners || []).filter((b) => (b.mediaUrl || '').trim())
   const slideKey = slides.map((s) => s.id).join(',')
   const [index, setIndex] = useState(0)
+  const [resolvedMediaUrl, setResolvedMediaUrl] = useState('')
+  const currentMediaRaw = slides[index]?.mediaUrl
+
+  useEffect(() => {
+    const raw = String(currentMediaRaw || '').trim()
+    if (!raw) {
+      setResolvedMediaUrl('')
+      return
+    }
+    let cancelled = false
+    void resolveB2MediaUrl(raw).then((u) => {
+      if (!cancelled) setResolvedMediaUrl(u)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [slideKey, index, currentMediaRaw])
 
   const len = slides.length
   const go = useCallback(
@@ -35,13 +53,14 @@ function HomeOffersSlider({ homeBanners = [] }) {
 
   const current = slides[index]
   const isVideo = current.mediaType === 'video'
+  const mediaSrc = resolvedMediaUrl || current.mediaUrl
 
   const inner = (
     <>
       {isVideo ? (
         <video
           className="home-offers-slider__media"
-          src={current.mediaUrl}
+          src={mediaSrc}
           autoPlay
           muted
           loop
@@ -51,7 +70,7 @@ function HomeOffersSlider({ homeBanners = [] }) {
       ) : (
         <img
           className="home-offers-slider__media"
-          src={current.mediaUrl}
+          src={mediaSrc}
           alt={current.title || 'Offer'}
           loading={index === 0 ? 'eager' : 'lazy'}
         />

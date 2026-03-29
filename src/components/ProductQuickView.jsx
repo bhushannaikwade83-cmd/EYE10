@@ -5,6 +5,7 @@ import { addToWishlist, removeFromWishlist, isInWishlist } from '../utils/localS
 import { addToComparison } from './ProductComparison'
 import toast from 'react-hot-toast'
 import ImageZoom from './ImageZoom'
+import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
 import './ProductQuickView.css'
 
 function ProductQuickView({ product, isOpen, onClose }) {
@@ -26,6 +27,8 @@ function ProductQuickView({ product, isOpen, onClose }) {
       document.body.style.overflow = ''
     }
   }, [isOpen])
+
+  const { url: zoomSrc } = useResolvedMediaUrl(product?.image || '')
 
   if (!isOpen || !product) return null
 
@@ -52,7 +55,10 @@ function ProductQuickView({ product, isOpen, onClose }) {
 
         <div className="quick-view-content">
           <div className="quick-view-image">
-            <ImageZoom src={product.image || 'https://via.placeholder.com/600'} alt={product.name} />
+            <ImageZoom
+              src={zoomSrc || 'https://via.placeholder.com/600'}
+              alt={product.name}
+            />
             {product.discount && (
               <span className="quick-view-discount">-{product.discount}%</span>
             )}

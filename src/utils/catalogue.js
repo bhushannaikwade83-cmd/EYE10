@@ -1,3 +1,5 @@
+import { resolveB2MediaUrl } from './b2PrivateUrls'
+
 /** PDF catalogues with per–brand labels (site content). */
 
 export function newCatalogueItemId() {
@@ -85,8 +87,9 @@ export function suggestedCatalogueDownloadFilename(item) {
  * Opens the PDF in a new tab and starts a download (best-effort; if fetch is blocked by CORS, the tab view still works).
  */
 export async function openCataloguePdfInNewTabAndDownload(item) {
-  const url = String(item?.pdfUrl || '').trim()
-  if (!url) return
+  const raw = String(item?.pdfUrl || '').trim()
+  if (!raw) return
+  const url = await resolveB2MediaUrl(raw)
   const name = suggestedCatalogueDownloadFilename(item)
   window.open(url, '_blank', 'noopener,noreferrer')
   try {

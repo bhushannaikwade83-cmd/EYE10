@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import toast from 'react-hot-toast'
 import { saveLastInquiryContact } from '../utils/inquiryContact'
 import { User, Phone, Mail, MessageSquare, X } from 'lucide-react'
@@ -28,18 +27,21 @@ function EnquiryForm({ product, onClose }) {
     e.preventDefault()
     setLoading(true)
 
-    if (!db) {
-      toast.error('Enquiry needs Firebase. Configure VITE_FIREBASE_* on this deployment.')
+    if (!supabase) {
+      toast.error('Enquiry needs Supabase. Configure VITE_SUPABASE_* on this deployment.')
       setLoading(false)
       return
     }
 
     try {
-      await addDoc(collection(db, 'enquiries'), {
-        ...formData,
-        createdAt: serverTimestamp(),
-        status: 'new',
+      const { error } = await supabase.from('enquiries').insert({
+        data: {
+          ...formData,
+          createdAt: new Date().toISOString(),
+          status: 'new',
+        },
       })
+      if (error) throw error
 
       toast.success('Enquiry submitted successfully! We will contact you soon.')
       saveLastInquiryContact({

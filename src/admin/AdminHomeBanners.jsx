@@ -1,5 +1,6 @@
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { auth, storage } from '../firebase/config'
+import { supabase } from '../supabase/client'
+import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
+import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import toast from 'react-hot-toast'
 
@@ -17,6 +18,17 @@ function guessMediaType(file) {
 function allowedFile(file) {
   const ok = ['image/jpeg', 'image/png', 'video/mp4', 'video/webm', 'video/quicktime']
   return ok.includes(file.type)
+}
+
+function AdminBannerMediaPreview({ banner }) {
+  const { url } = useResolvedMediaUrl(banner?.mediaUrl || '')
+  const src = url || banner?.mediaUrl
+  if (!src) return null
+  return banner.mediaType === 'video' ? (
+    <video src={src} muted playsInline />
+  ) : (
+    <img src={src} alt="" />
+  )
 }
 
 export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSaving }) {
@@ -89,8 +101,9 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
       toast.error(mt === 'video' ? 'Video must be under 42 MB.' : 'Image must be under 10 MB.')
       return
     }
-    if (!storage || !auth?.currentUser) {
-      toast.error('Sign in and enable Firebase Storage.')
+    const { data: { session } = {} } = await supabase.auth.getSession()
+    if (!canUseAdminStorage() || !session?.user) {
+      toast.error('Sign in and configure storage (Supabase Storage or B2 — see .env.example).')
       return
     }
 
@@ -98,9 +111,11 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
     const storagePath = `home-banners/${bannerId}/media.${ext}`
 
     try {
-      const storageRef = ref(storage, storagePath)
-      await uploadBytes(storageRef, file, { contentType: file.type })
-      const url = await getDownloadURL(storageRef)
+      const { url } = await uploadAdminFile({
+        storagePath,
+        file,
+        contentType: file.type,
+      })
       const nextBanners = (draft.homeBanners || []).map((b) =>
         b.id === bannerId
           ? { ...b, mediaUrl: url, mediaType: mt, storagePath }
@@ -110,15 +125,15 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
       toast.success('Media uploaded')
     } catch (err) {
       console.error(err)
-      toast.error(err?.message || 'Upload failed. Deploy storage.rules for home-banners.')
+      toast.error(err?.message || 'Upload failed. Check Storage policies and admin access.')
     }
   }
 
   const removeBanner = async (id) => {
     const b = banners.find((x) => x.id === id)
-    if (b?.storagePath && storage) {
+    if (b?.storagePath && canUseAdminStorage()) {
       try {
-        await deleteObject(ref(storage, b.storagePath))
+        await deleteAdminFile(b.storagePath)
       } catch (err) {
         console.warn(err)
       }
@@ -182,11 +197,7 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
 
               {b.mediaUrl ? (
                 <div className="admin-banner-preview">
-                  {b.mediaType === 'video' ? (
-                    <video src={b.mediaUrl} muted playsInline />
-                  ) : (
-                    <img src={b.mediaUrl} alt="" />
-                  )}
+                  <AdminBannerMediaPreview banner={b} />
                 </div>
               ) : null}
 
@@ -196,7 +207,7 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
                   type="file"
                   accept="image/jpeg,image/png,video/mp4,video/webm,video/quicktime"
                   onChange={(e) => void handleUpload(b.id, e)}
-                  disabled={!storage}
+                  disabled={!canUseAdminStorage()}
                 />
               </label>
 

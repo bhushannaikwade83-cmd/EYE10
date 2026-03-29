@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { collection, getDocs, query } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import ProductCard from '../components/ProductCard'
 import ProductFilters from '../components/ProductFilters'
 import { Filter, X, FileText } from 'lucide-react'
@@ -26,7 +25,7 @@ function Products() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!db) {
+      if (!supabase) {
         const sampleProducts = getSampleProducts()
         setProducts(sampleProducts)
         setFilteredProducts(sampleProducts)
@@ -34,11 +33,11 @@ function Products() {
         return
       }
       try {
-        const q = query(collection(db, 'products'))
-        const snapshot = await getDocs(q)
-        const productsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const { data: rows, error } = await supabase.from('products').select('id, data')
+        if (error) throw error
+        const productsData = (rows || []).map((r) => ({
+          id: r.id,
+          ...(r.data && typeof r.data === 'object' ? r.data : {}),
         }))
 
         setProducts(productsData)
@@ -277,7 +276,7 @@ function Products() {
                 <div className="no-products">
                   <h2>No products published yet</h2>
                   <p>
-                    Add documents to the <code>products</code> collection in Firebase. The storefront only
+                    Add rows to the <code>products</code> table in Supabase. The storefront only
                     shows data from your backend.
                   </p>
                 </div>

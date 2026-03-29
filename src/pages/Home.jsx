@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { collection, documentId, getDocs, limit, query, where } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import ProductCard from '../components/ProductCard'
 import HomeOffersSlider from '../components/HomeOffersSlider'
 import Brands from '../components/Brands'
@@ -30,7 +29,7 @@ function Home() {
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
-      if (!db) {
+      if (!supabase) {
         setFeaturedProducts(getSampleProducts().slice(0, 8))
         setLoading(false)
         return
@@ -39,18 +38,21 @@ function Home() {
       try {
         let products = []
         if (curatedIds.length > 0) {
-          const q = query(collection(db, 'products'), where(documentId(), 'in', curatedIds))
-          const snapshot = await getDocs(q)
+          const { data: rows, error } = await supabase.from('products').select('id, data').in('id', curatedIds)
+          if (error) throw error
           const byId = new Map(
-            snapshot.docs.map((doc) => [doc.id, { id: doc.id, ...doc.data() }])
+            (rows || []).map((r) => [
+              r.id,
+              { id: r.id, ...(r.data && typeof r.data === 'object' ? r.data : {}) },
+            ])
           )
-          products = curatedIds.map((id) => byId.get(id)).filter(Boolean)
+          products = curatedIds.map((pid) => byId.get(pid)).filter(Boolean)
         } else {
-          const q = query(collection(db, 'products'), limit(8))
-          const snapshot = await getDocs(q)
-          products = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
+          const { data: rows, error } = await supabase.from('products').select('id, data').limit(8)
+          if (error) throw error
+          products = (rows || []).map((r) => ({
+            id: r.id,
+            ...(r.data && typeof r.data === 'object' ? r.data : {}),
           }))
         }
 
@@ -124,7 +126,7 @@ function Home() {
             <div className="loading">Loading products...</div>
           ) : featuredProducts.length === 0 ? (
             <div className="no-products">
-              <p>Add products in Firebase or pick featured IDs in Admin. The site does not use mock inventory when Firebase is connected.</p>
+              <p>Add products in Supabase or pick featured IDs in Admin. The site does not use mock inventory when Supabase is connected.</p>
             </div>
           ) : (
             <div className="products-grid">

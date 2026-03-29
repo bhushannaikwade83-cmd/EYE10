@@ -1,28 +1,19 @@
 import { useEffect, useState } from 'react'
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth'
-import { auth, isFirebaseConfigured } from '../firebase/config'
 import { useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { isFirestoreAdmin } from '../utils/adminAccess'
+import { supabase, isSupabaseConfigured } from '../supabase/client'
+import { isAdminUser } from '../utils/adminAccess'
 import { AdminShell } from './AdminShell'
 import './AdminLogin.css'
 
 function loginErrorMessage(error) {
-  const code = error?.code
-  if (
-    code === 'auth/invalid-credential' ||
-    code === 'auth/wrong-password' ||
-    code === 'auth/user-not-found'
-  ) {
-    return 'Invalid email or password. Add this user in Firebase → Authentication → Email/Password.'
+  const msg = String(error?.message || '')
+  if (/invalid login credentials|invalid email or password/i.test(msg)) {
+    return 'Invalid email or password. Create the user in Supabase → Authentication.'
   }
-  if (code === 'auth/invalid-email') return 'Enter a valid email address.'
-  if (code === 'auth/too-many-requests') return 'Too many attempts. Try again in a few minutes.'
-  if (code === 'auth/user-disabled') return 'This account has been disabled.'
-  if (code === 'auth/invalid-api-key') {
-    return 'Invalid Firebase API key. On Vercel/hosting, set VITE_FIREBASE_API_KEY (and other VITE_FIREBASE_*) in Environment Variables, then redeploy.'
-  }
-  return error?.message || 'Login failed'
+  if (/email not confirmed/i.test(msg)) return 'Confirm your email in Supabase Auth, or disable email confirmation for testing.'
+  if (/too many requests/i.test(msg)) return 'Too many attempts. Try again in a few minutes.'
+  return msg || 'Login failed'
 }
 
 function AdminLogin() {
@@ -35,52 +26,57 @@ function AdminLogin() {
   useEffect(() => {
     if (location.state?.adminDenied) {
       toast.error(
-        'Not an admin: add a Firestore document admins/<your Firebase User UID> (see hint below).'
+        'Not an admin: add your user id to Supabase table public.admins (user_id = UUID from Authentication).'
       )
       navigate('/admin/login', { replace: true, state: {} })
     }
-    if (location.state?.firebaseMissing) {
+    if (location.state?.supabaseMissing) {
       toast.error(
-        'Firebase is not configured for this deployment. Add all VITE_FIREBASE_* variables on your host and redeploy.'
+        'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY on your host and redeploy.'
       )
       navigate('/admin/login', { replace: true, state: {} })
     }
   }, [location.state, navigate])
 
   useEffect(() => {
-    if (!auth) return undefined
-    const unsub = auth.onAuthStateChanged(async (user) => {
+    if (!supabase) return undefined
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
+      const user = session?.user
       if (!user) return
       try {
-        const ok = await isFirestoreAdmin(user.uid)
+        const ok = await isAdminUser(user.id)
         if (ok) navigate('/admin', { replace: true })
       } catch {
         /* ignore */
       }
     })
-    return () => unsub()
+    return () => subscription.unsubscribe()
   }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!auth) {
+    if (!supabase) {
       toast.error(
-        isFirebaseConfigured()
-          ? 'Firebase Auth is unavailable (e.g. invalid API key). Fix env vars or API key restrictions and redeploy.'
-          : 'Firebase is not configured. Set VITE_FIREBASE_* env vars and redeploy.'
+        isSupabaseConfigured()
+          ? 'Supabase client failed to initialize. Check env vars and redeploy.'
+          : 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
       )
       return
     }
     setLoading(true)
 
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password)
-      const uid = auth.currentUser?.uid
-      const ok = await isFirestoreAdmin(uid)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      if (error) throw error
+      const uid = data.user?.id
+      const ok = await isAdminUser(uid)
       if (!ok) {
-        await signOut(auth)
+        await supabase.auth.signOut()
         toast.error(
-          'Signed in, but this user is not in the admins collection. In Firestore create document ID = your User UID under collection admins.'
+          'Signed in, but this user is not in public.admins. Add a row with user_id = your auth user UUID.'
         )
         return
       }
@@ -93,16 +89,18 @@ function AdminLogin() {
     }
   }
 
+  const configured = isSupabaseConfigured() && supabase
+
   return (
     <AdminShell
       title="Admin login"
-      subtitle="Sign in with an admin user from Firebase Authentication."
+      subtitle="Sign in with a Supabase Auth user that is listed in public.admins."
       rightSlot={null}
     >
       <div className="admin-login">
         <div className="admin-login-card card">
           <h2 style={{ marginBottom: '8px' }}>Admin Login</h2>
-          {!auth && (
+          {!configured && (
             <p
               style={{
                 marginBottom: '16px',
@@ -113,25 +111,19 @@ function AdminLogin() {
                 fontSize: '0.95rem',
               }}
             >
-              {isFirebaseConfigured()
-                ? 'Firebase failed to initialize (invalid API key or project). Check the browser console and Google Cloud API key restrictions for your live domain.'
-                : 'Firebase is not active: add all VITE_FIREBASE_* variables in Vercel → Settings → Environment Variables (match .env.example), then redeploy.'}
+              Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel → Environment Variables, then
+              redeploy.
             </p>
           )}
           <p style={{ color: 'var(--gray-dark)', marginBottom: '12px' }}>
-            Uses Firebase Authentication (same project as your <code>.env</code>). Sign in with an
-            admin email you created under Firebase Console → Authentication.
+            Uses <strong>Supabase Auth</strong> (email/password). Create users under Supabase → Authentication.
           </p>
           <p
             className="review-hint admin-login-hint"
             style={{ marginBottom: '24px', fontSize: '0.9rem', color: 'var(--gray-dark)' }}
           >
-            <strong>Password</strong> is stored only in Firebase <strong>Authentication</strong> (not
-            in Firestore). <strong>Admin access</strong>: Firestore → collection <code>admins</code>{' '}
-            → add a document whose <strong>Document ID</strong> is your User UID from Authentication
-            (e.g. <code>4hB86loRxhUGGUKPPeIYRvhJxNN2</code>) and optional field{' '}
-            <code>role: &quot;admin&quot;</code>. Then publish <code>firestore.rules</code> from this
-            project.
+            <strong>Admin access</strong>: Table <code>public.admins</code> — add one row with{' '}
+            <code>user_id</code> equal to the user&apos;s UUID from Authentication → Users.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -159,11 +151,7 @@ function AdminLogin() {
               />
             </div>
 
-            <button
-              className="btn btn-primary"
-              type="submit"
-              disabled={loading || !auth}
-            >
+            <button className="btn btn-primary" type="submit" disabled={loading || !configured}>
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>

@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import { ArrowLeft, Heart, MessageSquare, Phone, GitCompare, Bell } from 'lucide-react'
 import ShareButtons from '../components/ShareButtons'
 import RelatedProducts from '../components/RelatedProducts'
@@ -16,8 +15,11 @@ import { getSitePhone, getSiteWhatsAppDigits } from '../utils/siteContact'
 import { getSampleProductById } from '../utils/sampleProducts'
 import { normalizeBenefitList, normalizeFeatureList } from '../utils/productDoc'
 import { useSiteContent } from '../context/SiteContentContext'
+import { useResolvedMediaUrls } from '../hooks/useResolvedMediaUrl'
 import toast from 'react-hot-toast'
 import './ProductDetail.css'
+
+const IMG_PLACEHOLDER = 'https://via.placeholder.com/600?text=EYE10'
 
 function ProductDetail() {
   const { id } = useParams()
@@ -32,18 +34,18 @@ function ProductDetail() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!db) {
+      if (!supabase) {
         const sampleProduct = getSampleProductById(id)
         if (sampleProduct) setProduct(sampleProduct)
         setLoading(false)
         return
       }
       try {
-        const docRef = doc(db, 'products', id)
-        const docSnap = await getDoc(docRef)
+        const { data: row, error } = await supabase.from('products').select('id, data').eq('id', id).maybeSingle()
 
-        if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data() })
+        if (error) throw error
+        if (row?.data && typeof row.data === 'object') {
+          setProduct({ id: row.id, ...row.data })
         } else {
           setProduct(null)
         }
@@ -61,6 +63,21 @@ function ProductDetail() {
   useEffect(() => {
     setSelectedImage(0)
   }, [id])
+
+  const imageList = useMemo(() => {
+    if (!product) return []
+    return Array.isArray(product.images) && product.images.length > 0
+      ? product.images.filter(Boolean)
+      : [product.image].filter(Boolean)
+  }, [product])
+
+  const videoList = useMemo(() => {
+    if (!product || !Array.isArray(product.videos)) return []
+    return product.videos.filter(Boolean)
+  }, [product])
+
+  const { urls: resolvedImages } = useResolvedMediaUrls(imageList)
+  const { urls: resolvedVideos } = useResolvedMediaUrls(videoList)
 
   useEffect(() => {
     if (product) {
@@ -116,12 +133,11 @@ function ProductDetail() {
     )
   }
 
-  const imageList =
-    Array.isArray(product.images) && product.images.length > 0
-      ? product.images.filter(Boolean)
-      : [product.image].filter(Boolean)
-  const mainImage = imageList[0] || 'https://via.placeholder.com/600?text=EYE10'
-  const videoList = Array.isArray(product.videos) ? product.videos.filter(Boolean) : []
+  const mainImage = imageList[0] || IMG_PLACEHOLDER
+  const zoomSrc =
+    (resolvedImages[selectedImage] || resolvedImages[0] || '') ||
+    imageList[selectedImage] ||
+    mainImage
   const featureList = normalizeFeatureList(product)
   const benefitList = normalizeBenefitList(product)
   const rating =
@@ -143,10 +159,7 @@ function ProductDetail() {
           <div className="product-detail-layout">
             <div className="product-images">
               <div className="main-image">
-                <ImageZoom
-                  src={imageList[selectedImage] ?? mainImage}
-                  alt={product.name}
-                />
+                <ImageZoom src={zoomSrc || IMG_PLACEHOLDER} alt={product.name} />
                 <button
                   className="favorite-btn"
                   onClick={handleWishlistToggle}
@@ -160,7 +173,7 @@ function ProductDetail() {
                   {imageList.map((img, index) => (
                     <img
                       key={index}
-                      src={img}
+                      src={resolvedImages[index] || img}
                       alt={`${product.name} ${index + 1}`}
                       className={selectedImage === index ? 'active' : ''}
                       onClick={() => setSelectedImage(index)}
@@ -174,7 +187,7 @@ function ProductDetail() {
                   {videoList.map((src, idx) => (
                     <video
                       key={`${src}-${idx}`}
-                      src={src}
+                      src={resolvedVideos[idx] || src}
                       muted
                       playsInline
                       preload="metadata"

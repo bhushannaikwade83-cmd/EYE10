@@ -53,9 +53,9 @@ export function AdminFeaturedProducts({
     <div className="card admin-card">
       <h2>Featured products (homepage)</h2>
       <p className="admin-muted">
-        Choose up to <strong>{MAX_FEATURED}</strong> products from your Firestore <code>products</code>{' '}
-        collection. They appear in order listed below. If none are selected, the home page shows the first
-        8 products automatically.
+        Choose up to <strong>{MAX_FEATURED}</strong> products from your Supabase <code>products</code>{' '}
+        table. They appear in order listed below. If none are selected, the home page shows the first 8
+        products automatically.
       </p>
 
       <p className="admin-muted" style={{ marginTop: '12px' }}>
@@ -73,8 +73,7 @@ export function AdminFeaturedProducts({
 
       {sorted.length === 0 ? (
         <p className="admin-muted" style={{ marginTop: '20px' }}>
-          No products found in Firestore. Add products in Firebase or the admin Products section (if
-          available).
+          No products found. Add products in the admin Products section (if available).
         </p>
       ) : (
         <div className="admin-featured-list" style={{ marginTop: '20px' }}>

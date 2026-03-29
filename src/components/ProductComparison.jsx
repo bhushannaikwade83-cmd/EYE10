@@ -2,7 +2,19 @@ import { useState, useEffect } from 'react'
 import { X, Trash2, GitCompare } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
 import './ProductComparison.css'
+
+function ComparisonProductImage({ product }) {
+  const { url } = useResolvedMediaUrl(product?.image || '')
+  return (
+    <img
+      src={url || 'https://via.placeholder.com/150'}
+      alt={product.name}
+      className="comparison-image"
+    />
+  )
+}
 
 function ProductComparison({ onClose: externalOnClose }) {
   const [comparisonProducts, setComparisonProducts] = useState([])
@@ -118,11 +130,7 @@ function ProductComparison({ onClose: externalOnClose }) {
                       >
                         <Trash2 size={16} />
                       </button>
-                      <img
-                        src={product.image || 'https://via.placeholder.com/150'}
-                        alt={product.name}
-                        className="comparison-image"
-                      />
+                      <ComparisonProductImage product={product} />
                       <h3>{product.name}</h3>
                       <Link
                         to={`/product/${product.id}`}

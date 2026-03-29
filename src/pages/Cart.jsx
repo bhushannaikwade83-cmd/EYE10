@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
+import { ProductImage } from '../components/ProductImage'
 import './Cart.css'
 
 function Cart() {
@@ -37,9 +38,10 @@ function Cart() {
               {cartItems.map((item) => (
                 <div key={item.id} className="cart-item">
                   <Link to={`/product/${item.id}`} className="cart-item-image">
-                    <img
-                      src={item.image || 'https://via.placeholder.com/150'}
+                    <ProductImage
+                      src={item.image}
                       alt={item.name}
+                      placeholder="https://via.placeholder.com/150"
                     />
                   </Link>
                   <div className="cart-item-info">

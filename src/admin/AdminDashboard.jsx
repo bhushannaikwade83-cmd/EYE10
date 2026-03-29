@@ -1,24 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  collection,
-  getCountFromServer,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore'
 import { Link } from 'react-router-dom'
 import { Package, Inbox, ShoppingBag, RefreshCw, ArrowRight } from 'lucide-react'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import { adminTabPath } from './adminTabs'
 import './AdminDashboard.css'
 
-function formatTs(ts) {
-  if (!ts) return null
+function formatTs(value) {
+  if (!value) return null
   try {
-    const d = ts?.toDate ? ts.toDate() : new Date(ts)
-    return d
+    const d = value instanceof Date ? value : new Date(value)
+    return Number.isNaN(d.getTime()) ? null : d
   } catch {
     return null
   }
@@ -39,8 +30,8 @@ export function AdminDashboard() {
   })
 
   const load = useCallback(async () => {
-    if (!db) {
-      setError('Firestore is not configured.')
+    if (!supabase) {
+      setError('Supabase is not configured.')
       setLoading(false)
       return
     }
@@ -48,40 +39,48 @@ export function AdminDashboard() {
     setLoading(true)
     try {
       const [
-        productsSnap,
-        enquiriesTotalSnap,
-        enquiriesNewSnap,
-        ordersTotalSnap,
-        pendingSnap,
-        lastEnqSnap,
-        lastOrdSnap,
+        productsRes,
+        enquiriesTotalRes,
+        enquiriesNewRes,
+        ordersTotalRes,
+        pendingRes,
+        lastEnqRes,
+        lastOrdRes,
       ] = await Promise.all([
-        getCountFromServer(collection(db, 'products')),
-        getCountFromServer(collection(db, 'enquiries')),
-        getCountFromServer(query(collection(db, 'enquiries'), where('status', '==', 'new'))),
-        getCountFromServer(collection(db, 'orders')),
-        getDocs(query(collection(db, 'orders'), where('status', '==', 'pending'))),
-        getDocs(query(collection(db, 'enquiries'), orderBy('createdAt', 'desc'), limit(1))),
-        getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(1))),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('enquiries').select('*', { count: 'exact', head: true }),
+        supabase.from('enquiries').select('*', { count: 'exact', head: true }).contains('data', { status: 'new' }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('data').contains('data', { status: 'pending' }),
+        supabase.from('enquiries').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('orders').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle(),
       ])
 
-      let revenuePending = 0
-      pendingSnap.forEach((d) => {
-        revenuePending += Number(d.data()?.total) || 0
-      })
+      const err =
+        productsRes.error ||
+        enquiriesTotalRes.error ||
+        enquiriesNewRes.error ||
+        ordersTotalRes.error ||
+        pendingRes.error ||
+        lastEnqRes.error ||
+        lastOrdRes.error
+      if (err) throw err
 
-      const lastEnquiryDoc = lastEnqSnap.docs[0]
-      const lastOrderDoc = lastOrdSnap.docs[0]
+      let revenuePending = 0
+      for (const row of pendingRes.data || []) {
+        const t = row?.data && typeof row.data === 'object' ? row.data.total : undefined
+        revenuePending += Number(t) || 0
+      }
 
       setStats({
-        products: productsSnap.data().count,
-        enquiriesNew: enquiriesNewSnap.data().count,
-        enquiriesTotal: enquiriesTotalSnap.data().count,
-        ordersPending: pendingSnap.size,
-        ordersTotal: ordersTotalSnap.data().count,
+        products: productsRes.count ?? 0,
+        enquiriesNew: enquiriesNewRes.count ?? 0,
+        enquiriesTotal: enquiriesTotalRes.count ?? 0,
+        ordersPending: (pendingRes.data || []).length,
+        ordersTotal: ordersTotalRes.count ?? 0,
         revenuePending,
-        lastEnquiryAt: lastEnquiryDoc ? formatTs(lastEnquiryDoc.data().createdAt) : null,
-        lastOrderAt: lastOrderDoc ? formatTs(lastOrderDoc.data().createdAt) : null,
+        lastEnquiryAt: formatTs(lastEnqRes.data?.created_at),
+        lastOrderAt: formatTs(lastOrdRes.data?.created_at),
       })
     } catch (e) {
       console.error(e)
@@ -102,7 +101,7 @@ export function AdminDashboard() {
       <div className="admin-dashboard__head">
         <div>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Live counts from Firestore. Use the sidebar for detailed management — bookmark URLs like{' '}
+            Live counts from Supabase. Use the sidebar for detailed management — bookmark URLs like{' '}
             <code>/admin?tab=orders</code>.
           </p>
         </div>

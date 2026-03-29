@@ -7,6 +7,7 @@ import ProductQuickView from './ProductQuickView'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 import { getSiteWhatsAppDigits } from '../utils/siteContact'
 import { useSiteContent } from '../context/SiteContentContext'
+import { ProductImage } from './ProductImage'
 import './ProductCard.css'
 
 function ProductCard({ product }) {
@@ -31,8 +32,8 @@ function ProductCard({ product }) {
             className="product-image-link"
             aria-label={`View ${product.name}`}
           >
-            <img
-              src={product.image || 'https://via.placeholder.com/300x200?text=EYE10'}
+            <ProductImage
+              src={product.image}
               alt={product.name}
               className="product-image"
               loading="lazy"

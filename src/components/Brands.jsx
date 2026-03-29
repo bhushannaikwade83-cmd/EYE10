@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, limit, query } from 'firebase/firestore'
 import { Download, FileText } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import { defaultSiteContent } from '../content/defaultSiteContent'
 import { brandLogoFromName } from '../utils/productDoc'
 import { useSiteContent } from '../context/SiteContentContext'
@@ -33,19 +32,23 @@ function Brands() {
         : defaultSiteContent.brandsSection.items
 
     const run = async () => {
-      if (!db) {
+      if (!supabase) {
         setBrands(fallbackItems)
         setLoading(false)
         return
       }
       try {
-        const snap = await getDocs(query(collection(db, 'products'), limit(500)))
-        if (cancelled) return
+        const { data: rows, error } = await supabase.from('products').select('data').limit(500)
+        if (cancelled || error) {
+          if (!cancelled && error) console.warn(error)
+          if (!cancelled) setBrands(fallbackItems)
+          return
+        }
         const names = [
           ...new Set(
-            snap.docs
-              .map((d) => {
-                const b = d.data()?.brand
+            (rows || [])
+              .map((r) => {
+                const b = r.data?.brand
                 return typeof b === 'string' ? b.trim() : ''
               })
               .filter(Boolean)
@@ -67,7 +70,7 @@ function Brands() {
     return () => {
       cancelled = true
     }
-  }, [db, brandsItemsKey])
+  }, [supabase, brandsItemsKey])
 
   const catalogueItems = getCatalogueItems(content)
 
@@ -115,7 +118,7 @@ function Brands() {
           </p>
         ) : brands.length === 0 ? (
           <p className="section-subtitle" style={{ marginTop: '16px' }}>
-            Brand list will appear when products include a <code>brand</code> field in Firebase.
+            Brand list will appear when products include a <code>brand</code> field in Supabase.
           </p>
         ) : (
           <div className="brands-grid">

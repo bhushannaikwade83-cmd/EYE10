@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { auth } from '../firebase/config'
-import { isFirestoreAdmin } from '../utils/adminAccess'
+import { supabase, isSupabaseConfigured } from '../supabase/client'
+import { isAdminUser } from '../utils/adminAccess'
 
 function AdminRoute({ children }) {
   const [checking, setChecking] = useState(true)
@@ -9,19 +9,21 @@ function AdminRoute({ children }) {
   const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    if (!auth) {
+    if (!supabase || !isSupabaseConfigured()) {
       setChecking(false)
-      return
+      return undefined
     }
-    const unsub = auth.onAuthStateChanged(async (currentUser) => {
-      setUser(currentUser)
-      if (!currentUser) {
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const u = session?.user ?? null
+      setUser(u)
+      if (!u) {
         setIsAdmin(false)
         setChecking(false)
         return
       }
       try {
-        const ok = await isFirestoreAdmin(currentUser.uid)
+        const ok = await isAdminUser(u.id)
         setIsAdmin(ok)
       } catch {
         setIsAdmin(false)
@@ -30,7 +32,7 @@ function AdminRoute({ children }) {
       }
     })
 
-    return () => unsub()
+    return () => subscription.unsubscribe()
   }, [])
 
   if (checking) {
@@ -43,8 +45,8 @@ function AdminRoute({ children }) {
     )
   }
 
-  if (!auth) {
-    return <Navigate to="/admin/login" replace state={{ firebaseMissing: true }} />
+  if (!supabase || !isSupabaseConfigured()) {
+    return <Navigate to="/admin/login" replace state={{ supabaseMissing: true }} />
   }
 
   if (!user) {

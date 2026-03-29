@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Bell, BellOff, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { ProductImage } from './ProductImage'
 import './PriceDropAlerts.css'
 
 function PriceDropAlerts() {
@@ -85,10 +86,11 @@ function PriceDropAlerts() {
                   {alerts.map((alert) => (
                     <div key={alert.id} className="alert-item">
                       <div className="alert-product-info">
-                        <img
-                          src={alert.productImage || 'https://via.placeholder.com/80'}
+                        <ProductImage
+                          src={alert.productImage}
                           alt={alert.productName}
                           className="alert-product-image"
+                          placeholder="https://via.placeholder.com/80"
                         />
                         <div className="alert-details">
                           <h4>{alert.productName}</h4>

@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import toast from 'react-hot-toast'
 import { Plus, Trash2 } from 'lucide-react'
-import { auth, storage } from '../firebase/config'
+import { supabase } from '../supabase/client'
+import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import { mirrorContactToNavbarFooter } from '../utils/siteContact'
-import { newCatalogueItemId, storagePathForCatalogueItem, syncLegacyCatalogueFromItems } from '../utils/catalogue'
+import {
+  newCatalogueItemId,
+  openCataloguePdfInNewTabAndDownload,
+  storagePathForCatalogueItem,
+  syncLegacyCatalogueFromItems,
+} from '../utils/catalogue'
 
 const MAX_PDF_BYTES = 24 * 1024 * 1024
 
@@ -62,9 +67,9 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     )
     if (!ok) return
 
-    if (row.storagePath && storage) {
+    if (row.storagePath && canUseAdminStorage()) {
       try {
-        await deleteObject(ref(storage, row.storagePath))
+        await deleteAdminFile(row.storagePath)
       } catch (e) {
         console.warn(e)
       }
@@ -80,8 +85,9 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    if (!storage || !auth?.currentUser) {
-      toast.error('Sign in and ensure Firebase Storage is enabled.')
+    const { data: { session } = {} } = await supabase.auth.getSession()
+    if (!canUseAdminStorage() || !session?.user) {
+      toast.error('Sign in and configure storage (Supabase Storage or B2 — see .env.example).')
       return
     }
     if (file.type !== 'application/pdf') {
@@ -100,9 +106,11 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     const storagePath = storagePathForCatalogueItem(row.id)
     setUploadingId(row.id)
     try {
-      const storageRef = ref(storage, storagePath)
-      await uploadBytes(storageRef, file, { contentType: 'application/pdf' })
-      const url = await getDownloadURL(storageRef)
+      const { url } = await uploadAdminFile({
+        storagePath,
+        file,
+        contentType: 'application/pdf',
+      })
       const updatedAt = new Date().toISOString()
       const list = items.map((x) =>
         x.id === row.id
@@ -123,7 +131,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       console.error(err)
       toast.error(
         err?.code === 'storage/unauthorized'
-          ? 'Upload denied: deploy storage.rules and ensure your user is in Firestore admins/{uid}.'
+          ? 'Upload denied: check Storage policies and that your user is in table public.admins.'
           : err?.message || 'Upload failed.'
       )
     } finally {
@@ -142,8 +150,8 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       <h2>Product catalogues (PDF by brand)</h2>
       <p className="admin-muted">
         Add one row per brand. Shoppers see each link on Brands, Products, and the footer. Files upload to{' '}
-        <code>catalogue/brands/…</code> in Firebase Storage (max 25 MB). Deploy <code>storage.rules</code> if uploads
-        fail.
+        <code>catalogue/brands/…</code> (Firebase Storage or Backblaze B2 when <code>VITE_STORAGE_BACKEND=b2</code>;
+        max 25 MB). Deploy <code>storage.rules</code> for Firebase, or configure B2 + Vercel API env vars.
       </p>
 
       <div className="admin-actions-row" style={{ marginTop: '12px' }}>
@@ -209,7 +217,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                 <input
                   type="file"
                   accept="application/pdf,.pdf"
-                  disabled={uploadingId === row.id || !storage}
+                  disabled={uploadingId === row.id || !canUseAdminStorage()}
                   onChange={(e) => void handleUpload(e, row)}
                 />
                 <p className="admin-muted" style={{ marginTop: '10px', marginBottom: 0 }}>
@@ -242,7 +250,15 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
 
               {row.pdfUrl ? (
                 <div className="admin-status-box" style={{ marginTop: '12px' }}>
-                  <a href={row.pdfUrl} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={row.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      void openCataloguePdfInNewTabAndDownload(row)
+                    }}
+                  >
                     Open PDF — {linkLabel(row)}
                   </a>
                   {row.fileName ? (

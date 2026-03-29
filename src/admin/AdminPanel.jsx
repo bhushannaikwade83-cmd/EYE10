@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getAdminTabFromLocation } from './adminTabs'
-import { signOut } from 'firebase/auth'
-import { collection, getDocs, limit, query } from 'firebase/firestore'
-import { auth, db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import { useSiteContent } from '../context/SiteContentContext'
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import toast from 'react-hot-toast'
@@ -31,12 +29,12 @@ const TAB_HEADER = {
     title: 'Overview',
     subtitle: 'Metrics, enquiries pipeline, and orders — plus shortcuts to every admin area.',
   },
-  enquiries: { title: 'Enquiries', subtitle: 'Contact and product enquiry leads from Firestore.' },
+  enquiries: { title: 'Enquiries', subtitle: 'Contact and product enquiry leads (Supabase).' },
   orders: { title: 'Orders', subtitle: 'Checkout orders, line items, and fulfilment status.' },
   content: { title: 'Website content', subtitle: 'Brand copy, hero, contact, footer, event banner.' },
   catalogue: { title: 'Catalogue PDF', subtitle: 'Upload and publish the downloadable catalogue.' },
   social: { title: 'Social links', subtitle: 'Facebook, Instagram, X, and YouTube URLs for the footer.' },
-  products: { title: 'Products', subtitle: 'Full CRUD for the Firestore products collection.' },
+  products: { title: 'Products', subtitle: 'Full CRUD for the products table (Supabase).' },
   featured: { title: 'Featured products', subtitle: 'Homepage featured grid (up to 8).' },
   banners: { title: 'Home banners', subtitle: 'Homepage offer slider (images or video).' },
   coupons: { title: 'Coupons', subtitle: 'Google Review campaign coupon verification.' },
@@ -65,20 +63,23 @@ function AdminPanel() {
   }, [content])
 
   useEffect(() => {
-    if (!db) {
+    if (!supabase) {
       setAllProducts([])
       return
     }
     let cancelled = false
     ;(async () => {
       try {
-        const q = query(collection(db, 'products'), limit(200))
-        const snap = await getDocs(q)
-        if (cancelled) return
+        const { data: rows, error } = await supabase.from('products').select('id, data').limit(200)
+        if (cancelled || error) {
+          if (!cancelled && error) console.warn(error)
+          if (!cancelled) setAllProducts([])
+          return
+        }
         setAllProducts(
-          snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
+          (rows || []).map((r) => ({
+            id: r.id,
+            ...(r.data && typeof r.data === 'object' ? r.data : {}),
           }))
         )
       } catch (e) {
@@ -89,7 +90,7 @@ function AdminPanel() {
     return () => {
       cancelled = true
     }
-  }, [db])
+  }, [])
 
   const setField = (section, key, value) => {
     setDraft((prev) => ({
@@ -121,7 +122,7 @@ function AdminPanel() {
   }
 
   const handleLogout = async () => {
-    if (auth) await signOut(auth)
+    if (supabase) await supabase.auth.signOut()
     navigate('/admin/login')
     toast.success('Logged out')
   }
@@ -347,7 +348,7 @@ function AdminPanel() {
 
             <h2>Products (storefront copy)</h2>
             <p className="admin-muted" style={{ marginTop: 0 }}>
-              Product data (name, price, images) comes from the Firestore <code>products</code> collection.
+              Product data (name, price, images) comes from the Supabase <code>products</code> table.
               These fields only control headings and labels on the Products page and Home featured section.
             </p>
             <input
@@ -377,7 +378,7 @@ function AdminPanel() {
 
             <h2>Brands section</h2>
             <p className="admin-muted" style={{ marginTop: 0 }}>
-              When products in Firebase include a <code>brand</code> field, the homepage brands strip uses those
+              When products include a <code>brand</code> field, the homepage brands strip uses those
               names automatically. If none are found, the default list from site defaults is shown.
             </p>
             <input

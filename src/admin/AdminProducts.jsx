@@ -1,16 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  setDoc,
-} from 'firebase/firestore'
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import toast from 'react-hot-toast'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { db, storage } from '../firebase/config'
+import { supabase } from '../supabase/client'
+import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
+import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
 import './AdminProducts.css'
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -23,6 +16,16 @@ function safeFileName(name) {
   const n = String(name || 'file')
   // Keep common filename chars; strip the rest.
   return n.replace(/[^a-zA-Z0-9._-]+/g, '_')
+}
+
+function AdminProductMediaImg({ src, alt }) {
+  const { url } = useResolvedMediaUrl(src || '')
+  return <img src={url || src} alt={alt} />
+}
+
+function AdminProductMediaVideo({ src }) {
+  const { url } = useResolvedMediaUrl(src || '')
+  return <video src={url || src} controls={false} muted playsInline />
 }
 
 function parseLines(text) {
@@ -163,7 +166,7 @@ export function AdminProducts() {
   const [search, setSearch] = useState('')
 
   const refresh = async () => {
-    if (!db) {
+    if (!supabase) {
       setProducts([])
       setLoading(false)
       return
@@ -171,10 +174,11 @@ export function AdminProducts() {
     setError('')
     setLoading(true)
     try {
-      const snapshot = await getDocs(collection(db, 'products'))
-      const list = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
-        ...docSnap.data(),
+      const { data: rows, error } = await supabase.from('products').select('id, data')
+      if (error) throw error
+      const list = (rows || []).map((r) => ({
+        id: r.id,
+        ...(r.data && typeof r.data === 'object' ? r.data : {}),
       }))
       setProducts(list)
     } catch (e) {
@@ -277,9 +281,9 @@ export function AdminProducts() {
 
   const removeExistingImageAt = async (idx) => {
     const storagePath = form.imageStoragePaths?.[idx]
-    if (storagePath && storage) {
+    if (storagePath && canUseAdminStorage()) {
       try {
-        await deleteObject(ref(storage, storagePath))
+        await deleteAdminFile(storagePath)
       } catch (e) {
         console.warn('Image delete failed (non-blocking):', e)
       }
@@ -294,9 +298,9 @@ export function AdminProducts() {
 
   const removeExistingVideoAt = async (idx) => {
     const storagePath = form.videoStoragePaths?.[idx]
-    if (storagePath && storage) {
+    if (storagePath && canUseAdminStorage()) {
       try {
-        await deleteObject(ref(storage, storagePath))
+        await deleteAdminFile(storagePath)
       } catch (e) {
         console.warn('Video delete failed (non-blocking):', e)
       }
@@ -310,7 +314,7 @@ export function AdminProducts() {
   }
 
   const uploadFilesToProduct = async (productId, imageFiles, videoFiles) => {
-    if (!storage) throw new Error('Firebase Storage not configured')
+    if (!canUseAdminStorage()) throw new Error('Storage not configured (Supabase Storage or B2)')
     const imageUploads = []
     const videoUploads = []
 
@@ -333,9 +337,11 @@ export function AdminProducts() {
       const storagePath = `product-media/${productId}/images/${Date.now()}_${i}_${safeFileName(
         file.name
       ).replace(/\\.[^/.]+$/, '')}.${ext}`
-      const r = ref(storage, storagePath)
-      await uploadBytes(r, file, { contentType: file.type })
-      const url = await getDownloadURL(r)
+      const { url } = await uploadAdminFile({
+        storagePath,
+        file,
+        contentType: file.type,
+      })
       imageUploads.push({ url, storagePath })
     }
 
@@ -356,9 +362,11 @@ export function AdminProducts() {
       const storagePath = `product-media/${productId}/videos/${Date.now()}_${i}_${safeFileName(
         file.name
       ).replace(/\\.[^/.]+$/, '')}.${ext}`
-      const r = ref(storage, storagePath)
-      await uploadBytes(r, file, { contentType: file.type })
-      const url = await getDownloadURL(r)
+      const { url } = await uploadAdminFile({
+        storagePath,
+        file,
+        contentType: file.type,
+      })
       videoUploads.push({ url, storagePath })
     }
 
@@ -369,8 +377,8 @@ export function AdminProducts() {
   }
 
   const handleCreateOrUpdate = async () => {
-    if (!db) {
-      toast.error('Firebase Firestore not configured.')
+    if (!supabase) {
+      toast.error('Supabase is not configured.')
       return
     }
 
@@ -385,16 +393,15 @@ export function AdminProducts() {
     try {
       const idInput = mode === 'add' ? String(form.productIdInput || '').trim() : selectedId
       if (mode === 'add' && !idInput) {
-        // We'll create an id via addDoc.
-        // First write placeholder so we can upload media under a known productId.
         const placeholderPayload = buildProductPayload(form, {
           images: [],
           videos: [],
           imageStoragePaths: [],
           videoStoragePaths: [],
         })
-        const createdRef = await addDoc(collection(db, 'products'), placeholderPayload)
-        const productId = createdRef.id
+        const productId = crypto.randomUUID()
+        const { error: insertErr } = await supabase.from('products').insert({ id: productId, data: placeholderPayload })
+        if (insertErr) throw insertErr
 
         const { imageUploads, videoUploads } = await uploadFilesToProduct(
           productId,
@@ -409,7 +416,8 @@ export function AdminProducts() {
           videoStoragePaths: videoUploads.map((x) => x.storagePath),
         })
 
-        await setDoc(doc(db, 'products', productId), finalPayload, { merge: true })
+        const { error: updateErr } = await supabase.from('products').update({ data: finalPayload }).eq('id', productId)
+        if (updateErr) throw updateErr
         toast.success('Product created.')
         await refresh()
         loadIntoForm({ id: productId, ...finalPayload })
@@ -419,17 +427,16 @@ export function AdminProducts() {
       const productId = mode === 'edit' ? selectedId : idInput
       if (!productId) throw new Error('Missing product id.')
 
-      // Upload media immediately for edit; pending media is only for add-mode.
       let mediaOverride = null
       if (mode === 'add') {
-        // Add-mode with explicit id -> upload files then save final payload.
         const placeholderPayload = buildProductPayload(form, {
           images: [],
           videos: [],
           imageStoragePaths: [],
           videoStoragePaths: [],
         })
-        await setDoc(doc(db, 'products', productId), placeholderPayload, { merge: true })
+        const { error: insertErr } = await supabase.from('products').insert({ id: productId, data: placeholderPayload })
+        if (insertErr) throw insertErr
 
         const { imageUploads, videoUploads } = await uploadFilesToProduct(
           productId,
@@ -455,7 +462,8 @@ export function AdminProducts() {
               videoStoragePaths: form.videoStoragePaths || [],
             })
 
-      await setDoc(doc(db, 'products', productId), finalPayload, { merge: true })
+      const { error: saveErr } = await supabase.from('products').update({ data: finalPayload }).eq('id', productId)
+      if (saveErr) throw saveErr
       toast.success(mode === 'add' ? 'Product created.' : 'Product saved.')
 
       await refresh()
@@ -471,21 +479,22 @@ export function AdminProducts() {
   }
 
   const handleDelete = async () => {
-    if (!selectedId) return
+    if (!selectedId || !supabase) return
     const ok = window.confirm('Delete this product? This cannot be undone.')
     if (!ok) return
     setDeletingId(selectedId)
     try {
       const p = products.find((x) => x.id === selectedId)
-      if (p && storage) {
+      if (p && canUseAdminStorage()) {
         const imgPaths = getMediaStoragePaths(p, 'imageStoragePaths')
         const vidPaths = getMediaStoragePaths(p, 'videoStoragePaths')
         await Promise.all(
-          [...imgPaths, ...vidPaths].filter(Boolean).map((path) => deleteObject(ref(storage, path)))
+          [...imgPaths, ...vidPaths].filter(Boolean).map((path) => deleteAdminFile(path))
         )
       }
 
-      await deleteDoc(doc(db, 'products', selectedId))
+      const { error: delErr } = await supabase.from('products').delete().eq('id', selectedId)
+      if (delErr) throw delErr
       toast.success('Product deleted.')
       await refresh()
       startAdd()
@@ -498,8 +507,8 @@ export function AdminProducts() {
   }
 
   const handleEditUploadImages = async (files) => {
-    if (!selectedId) return
-    if (!storage) return toast.error('Firebase Storage not configured.')
+    if (!selectedId || !supabase) return
+    if (!canUseAdminStorage()) return toast.error('Storage not configured (Supabase Storage or B2).')
     const list = Array.from(files || [])
     if (list.length === 0) return
 
@@ -516,17 +525,14 @@ export function AdminProducts() {
       const nextForm = { ...form, images: nextImages, imageStoragePaths: nextImageStoragePaths }
       setForm(nextForm)
 
-      // Persist immediately so uploaded files are linked to the product doc.
-      await setDoc(
-        doc(db, 'products', selectedId),
-        buildProductPayload(nextForm, {
-          images: nextImages,
-          imageStoragePaths: nextImageStoragePaths,
-          videos: form.videos || [],
-          videoStoragePaths: form.videoStoragePaths || [],
-        }),
-        { merge: true }
-      )
+      const payload = buildProductPayload(nextForm, {
+        images: nextImages,
+        imageStoragePaths: nextImageStoragePaths,
+        videos: form.videos || [],
+        videoStoragePaths: form.videoStoragePaths || [],
+      })
+      const { error: upErr } = await supabase.from('products').update({ data: payload }).eq('id', selectedId)
+      if (upErr) throw upErr
 
       toast.success('Images uploaded.')
     } catch (e) {
@@ -538,8 +544,8 @@ export function AdminProducts() {
   }
 
   const handleEditUploadVideos = async (files) => {
-    if (!selectedId) return
-    if (!storage) return toast.error('Firebase Storage not configured.')
+    if (!selectedId || !supabase) return
+    if (!canUseAdminStorage()) return toast.error('Storage not configured (Supabase Storage or B2).')
     const list = Array.from(files || [])
     if (list.length === 0) return
 
@@ -556,16 +562,14 @@ export function AdminProducts() {
       const nextForm = { ...form, videos: nextVideos, videoStoragePaths: nextVideoStoragePaths }
       setForm(nextForm)
 
-      await setDoc(
-        doc(db, 'products', selectedId),
-        buildProductPayload(nextForm, {
-          videos: nextVideos,
-          videoStoragePaths: nextVideoStoragePaths,
-          images: form.images || [],
-          imageStoragePaths: form.imageStoragePaths || [],
-        }),
-        { merge: true }
-      )
+      const payload = buildProductPayload(nextForm, {
+        videos: nextVideos,
+        videoStoragePaths: nextVideoStoragePaths,
+        images: form.images || [],
+        imageStoragePaths: form.imageStoragePaths || [],
+      })
+      const { error: upErr } = await supabase.from('products').update({ data: payload }).eq('id', selectedId)
+      if (upErr) throw upErr
 
       toast.success('Videos uploaded.')
     } catch (e) {
@@ -594,8 +598,8 @@ export function AdminProducts() {
         <div>
           <h2 style={{ marginTop: 0 }}>Products (CRUD)</h2>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Add/edit/delete products stored in Firestore collection <code>products</code>. Photos
-            and videos are uploaded to Firebase Storage.
+            Add/edit/delete products in Supabase table <code>products</code>. Photos and videos are
+            uploaded to Supabase Storage or Backblaze B2 (see <code>VITE_STORAGE_BACKEND</code>).
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={startAdd}>
@@ -680,7 +684,7 @@ export function AdminProducts() {
                 {mode === 'add' ? (
                   <div className="admin-products-form-section">
                     <label className="admin-label">
-                      Product ID (optional). If empty, Firestore will auto-generate.
+                      Product ID (optional). If empty, a new UUID is generated.
                       <input
                         className="input"
                         value={form.productIdInput}
@@ -948,7 +952,7 @@ export function AdminProducts() {
                           <div className="admin-products-media-grid">
                             {form.images.map((url, idx) => (
                               <div key={`${url}-${idx}`} className="admin-products-media-item">
-                                <img src={url} alt={`Image ${idx + 1}`} />
+                                <AdminProductMediaImg src={url} alt={`Image ${idx + 1}`} />
                                 <button
                                   type="button"
                                   className="btn btn-outline admin-products-media-remove"
@@ -965,7 +969,7 @@ export function AdminProducts() {
                           <div className="admin-products-media-grid">
                             {form.videos.map((url, idx) => (
                               <div key={`${url}-${idx}`} className="admin-products-media-item">
-                                <video src={url} controls={false} muted playsInline />
+                                <AdminProductMediaVideo src={url} />
                                 <button
                                   type="button"
                                   className="btn btn-outline admin-products-media-remove"

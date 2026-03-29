@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs, query, where, limit } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
 import ProductCard from './ProductCard'
 import './RelatedProducts.css'
 
@@ -16,37 +15,25 @@ function RelatedProducts({ currentProduct }) {
     }
 
     const fetchRelatedProducts = async () => {
-      if (!db) {
+      if (!supabase) {
         setRelatedProducts([])
         setLoading(false)
         return
       }
       try {
-        let q
+        const { data: rows, error } = await supabase.from('products').select('id, data').limit(120)
+        if (error) throw error
+        const all = (rows || []).map((r) => ({
+          id: r.id,
+          ...(r.data && typeof r.data === 'object' ? r.data : {}),
+        }))
+        let pool = all.filter((p) => p.id !== currentProduct?.id)
         if (currentProduct?.category) {
-          q = query(
-            collection(db, 'products'),
-            where('category', '==', currentProduct.category),
-            limit(8)
-          )
+          pool = pool.filter((p) => p.category === currentProduct.category)
         } else if (currentProduct?.brand) {
-          q = query(
-            collection(db, 'products'),
-            where('brand', '==', currentProduct.brand),
-            limit(8)
-          )
-        } else {
-          q = query(collection(db, 'products'), limit(8))
+          pool = pool.filter((p) => p.brand === currentProduct.brand)
         }
-
-        const snapshot = await getDocs(q)
-        const products = snapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-          .filter((p) => p.id !== currentProduct?.id)
-          .slice(0, 4)
+        const products = pool.slice(0, 4)
 
         setRelatedProducts(products)
       } catch (error) {
