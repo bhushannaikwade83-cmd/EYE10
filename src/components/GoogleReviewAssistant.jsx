@@ -6,6 +6,7 @@ import {
   REVIEW_OPTIONS,
   GOOGLE_REVIEW_URL,
   buildReviewSentence,
+  getCouponByCode,
   getWebsiteReviews,
   issueCouponForReview,
   saveWebsiteReview,
@@ -136,12 +137,17 @@ function GoogleReviewAssistant() {
     setCouponValue('')
   }
 
-  const trySendCouponEmail = async (code, offer) => {
+  const trySendCouponEmail = async (code, offer, validity = {}) => {
+    const couponMeta = getCouponByCode(code)
+    const validFrom = validity.validFrom || couponMeta?.issuedAt
+    const validTill = validity.validTill || couponMeta?.expiresAt
     const result = await sendCouponEmail({
       customerName: nameRef.current.trim() || 'Customer',
       customerEmail: emailRef.current,
       couponCode: code,
       offerLabel: offer,
+      validFrom,
+      validTill,
     })
     if (result.ok) {
       toast.success('Coupon sent to your email.')
@@ -189,7 +195,10 @@ function GoogleReviewAssistant() {
         setCouponValue(result.coupon.offerLabel)
         setCouponCode(result.coupon.code)
         toast.error('Only one coupon is allowed per mobile number.')
-        void trySendCouponEmail(result.coupon.code, result.coupon.offerLabel)
+        void trySendCouponEmail(result.coupon.code, result.coupon.offerLabel, {
+          validFrom: result.coupon.issuedAt,
+          validTill: result.coupon.expiresAt,
+        })
         return
       }
 
@@ -201,7 +210,10 @@ function GoogleReviewAssistant() {
       setCouponValue(result.coupon.offerLabel)
       setCouponCode(result.coupon.code)
       toast.success(`You won ${selectedCoupon.label}!`)
-      void trySendCouponEmail(result.coupon.code, result.coupon.offerLabel)
+      void trySendCouponEmail(result.coupon.code, result.coupon.offerLabel, {
+        validFrom: result.coupon.issuedAt,
+        validTill: result.coupon.expiresAt,
+      })
     }, 3200)
   }
 

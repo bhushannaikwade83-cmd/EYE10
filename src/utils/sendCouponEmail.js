@@ -25,6 +25,8 @@ export async function sendCouponEmail({
   customerEmail,
   couponCode,
   offerLabel,
+  validFrom,
+  validTill,
 }) {
   if (!isCouponEmailConfigured()) {
     return { ok: false, skipped: true, reason: 'not-configured' }
@@ -45,6 +47,12 @@ export async function sendCouponEmail({
     const safeCode = String(couponCode ?? '')
     const safeOffer = String(offerLabel ?? '')
     const safeDays = String(COUPON_EXPIRY_DAYS)
+    const fromDate = validFrom ? new Date(validFrom) : new Date()
+    const tillDate = validTill
+      ? new Date(validTill)
+      : new Date(fromDate.getTime() + COUPON_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+    const safeFrom = Number.isNaN(fromDate.getTime()) ? 'N/A' : fromDate.toLocaleDateString('en-IN')
+    const safeTill = Number.isNaN(tillDate.getTime()) ? 'N/A' : tillDate.toLocaleDateString('en-IN')
     const subject = `${subjectPrefix} Coupon Code: ${safeCode}`
     const textContent = [
       `Hi ${safeName},`,
@@ -53,7 +61,9 @@ export async function sendCouponEmail({
       '',
       `Your coupon code: ${safeCode}`,
       `Offer: ${safeOffer}`,
-      `Validity: ${safeDays} days`,
+      `Valid from: ${safeFrom}`,
+      `Valid till: ${safeTill}`,
+      `Validity window: ${safeDays} days`,
       '',
       'Show this code at EYE10 shop to redeem.',
     ].join('\n')
@@ -63,7 +73,9 @@ export async function sendCouponEmail({
       <p>
         <strong>Your coupon code:</strong> ${safeCode}<br/>
         <strong>Offer:</strong> ${safeOffer}<br/>
-        <strong>Validity:</strong> ${safeDays} days
+        <strong>Valid from:</strong> ${safeFrom}<br/>
+        <strong>Valid till:</strong> ${safeTill}<br/>
+        <strong>Validity window:</strong> ${safeDays} days
       </p>
       <p>Show this code at EYE10 shop to redeem.</p>
     `
