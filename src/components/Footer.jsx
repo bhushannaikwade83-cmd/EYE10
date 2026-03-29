@@ -156,7 +156,6 @@ function Footer() {
               <div className="footer-credits__grid">
                 <article className="footer-credits-card">
                   <h3 className="footer-credits-card__name">Vedant Kapse</h3>
-                  <p className="footer-credits-card__role">Frontend developer</p>
                   <p className="footer-credits-card__meta">
                     <span className="footer-credits-card__label">Contact</span>
                     <a href="tel:+917208324505">72083 24505</a>
@@ -168,7 +167,6 @@ function Footer() {
                 </article>
                 <article className="footer-credits-card">
                   <h3 className="footer-credits-card__name">Bhushan Naikwade</h3>
-                  <p className="footer-credits-card__role">Full stack developer</p>
                   <p className="footer-credits-card__meta">
                     <span className="footer-credits-card__label">Contact</span>
                     <a href="tel:+919773609077">97736 09077</a>
