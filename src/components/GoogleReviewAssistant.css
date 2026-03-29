@@ -141,7 +141,7 @@
 
 .coupon-wheel-wrap {
   --wheel-size: min(300px, calc(100vw - 48px));
-  --wheel-label-offset: 108px;
+  --wheel-label-offset: 96px;
   position: relative;
   width: var(--wheel-size);
   max-width: 100%;
@@ -185,9 +185,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform-origin: 0 0;
-  width: min(100px, 32vw);
-  max-width: 104px;
+  transform-origin: 50% 50%;
+  width: min(92px, 30vw);
+  max-width: 96px;
   margin-top: 0;
   text-align: center;
   pointer-events: none;
@@ -195,9 +195,9 @@
 }
 
 .coupon-wheel-label-text {
-  display: block;
+  display: inline-block;
   font-size: clamp(10px, 3.1vw, 12px);
-  line-height: 1.2;
+  line-height: 1.16;
   font-weight: 800;
   letter-spacing: 0.01em;
   color: #111827;
@@ -212,11 +212,11 @@
 @media (max-width: 520px) {
   .coupon-wheel-wrap {
     --wheel-size: min(272px, calc(100vw - 40px));
-    --wheel-label-offset: 88px;
+    --wheel-label-offset: 82px;
   }
 
   .coupon-wheel-label {
-    width: min(78px, 27vw);
+    width: min(74px, 26vw);
   }
 
   .coupon-wheel-label-text {
@@ -237,11 +237,11 @@
 @media (max-width: 380px) {
   .coupon-wheel-wrap {
     --wheel-size: min(252px, calc(100vw - 28px));
-    --wheel-label-offset: 80px;
+    --wheel-label-offset: 74px;
   }
 
   .coupon-wheel-label {
-    width: min(70px, 25vw);
+    width: min(66px, 24vw);
   }
 
   .coupon-wheel-label-text {

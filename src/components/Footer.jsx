@@ -158,7 +158,13 @@ function Footer() {
                   <h3 className="footer-credits-card__name">Vedant Kapse</h3>
                   <p className="footer-credits-card__meta">
                     <span className="footer-credits-card__label">Contact</span>
-                    <a href="tel:+917208324505">72083 24505</a>
+                    <a
+                      href="tel:+917208324505"
+                      className="footer-credits-card__tel"
+                      aria-label="Call Vedant Kapse at 7208324505"
+                    >
+                      72083 24505
+                    </a>
                   </p>
                   <p className="footer-credits-card__meta">
                     <span className="footer-credits-card__label">Email</span>
@@ -169,7 +175,13 @@ function Footer() {
                   <h3 className="footer-credits-card__name">Bhushan Naikwade</h3>
                   <p className="footer-credits-card__meta">
                     <span className="footer-credits-card__label">Contact</span>
-                    <a href="tel:+919773609077">97736 09077</a>
+                    <a
+                      href="tel:+919773609077"
+                      className="footer-credits-card__tel"
+                      aria-label="Call Bhushan Naikwade at 9773609077"
+                    >
+                      97736 09077
+                    </a>
                   </p>
                   <p className="footer-credits-card__meta">
                     <span className="footer-credits-card__label">Email</span>

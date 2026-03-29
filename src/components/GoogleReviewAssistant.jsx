@@ -13,8 +13,6 @@ import {
 } from '../utils/googleReviews'
 import { getLastInquiryContact } from '../utils/inquiryContact'
 import {
-  getMissingCouponEmailEnvVars,
-  isCouponEmailConfigured,
   sendCouponEmail,
 } from '../utils/sendCouponEmail'
 import './GoogleReviewAssistant.css'
@@ -154,12 +152,9 @@ function GoogleReviewAssistant() {
       return
     }
     if (result.skipped && result.reason === 'not-configured') {
-      const miss = getMissingCouponEmailEnvVars()
-      const hint =
-        miss.length > 0
-          ? ` Set ${miss.join(' and ')} in .env (non-empty), save, then restart the dev server.`
-          : ' Restart the dev server after changing .env.'
-      toast.error(`Email is not configured.${hint}`)
+      toast.error(
+        'Email is not configured. Set BREVO_API_KEY and BREVO_SENDER_EMAIL in Vercel/server env, then redeploy.'
+      )
       return
     }
     if (result.skipped && result.reason === 'no-email') {
@@ -345,7 +340,7 @@ function GoogleReviewAssistant() {
                     className="coupon-wheel-label"
                     style={{
                       '--label-angle': `${index * segmentAngle}deg`,
-                      transform: `rotate(${index * segmentAngle}deg) translateX(var(--wheel-label-offset)) translateY(-50%)`,
+                      transform: `translate(-50%, -50%) rotate(${index * segmentAngle}deg) translateY(calc(-1 * var(--wheel-label-offset)))`,
                     }}
                   >
                     <span className="coupon-wheel-label-text">{option.label}</span>
@@ -375,13 +370,6 @@ function GoogleReviewAssistant() {
                   {couponValue} - Check your email inbox. Valid for {COUPON_EXPIRY_DAYS} days. Show
                   the code at the shop counter.
                 </p>
-                {!isCouponEmailConfigured() && (
-                  <p className="review-hint" style={{ marginBottom: '12px' }}>
-                    In <code>.env</code>, set <code>{getMissingCouponEmailEnvVars().join(', ')}</code>{' '}
-                    to non-empty values (Brevo API key + verified sender email), save, then restart
-                    the dev server.
-                  </p>
-                )}
                 <button
                   type="button"
                   className="btn btn-outline"

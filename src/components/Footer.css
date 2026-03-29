@@ -735,6 +735,8 @@
   letter-spacing: 0.01em;
   color: #2a1400;
   font-family: 'Sora', 'Inter', sans-serif;
+  position: relative;
+  z-index: 2;
 }
 .footer-credits-card__role {
   margin: 0 0 16px;
@@ -753,6 +755,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: relative;
+  z-index: 2;
 }
 
 .footer-credits-card__meta:last-child {
@@ -775,6 +779,15 @@
   word-break: break-word;
   transition: color 0.2s ease;
   font-family: 'Sora', sans-serif;
+}
+
+.footer-credits-card__meta a.footer-credits-card__tel {
+  cursor: pointer;
+  padding: 4px 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  -webkit-tap-highlight-color: rgb(42 20 0 / 0.12);
 }
 
 .footer-credits-card__meta a:hover {
