@@ -1,0 +1,17 @@
+[
+  {
+    "corsRuleName": "eye10-local-and-prod",
+    "allowedOrigins": [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:3001",
+      "http://127.0.0.1:3001",
+      "https://your-domain.com",
+      "https://www.your-domain.com"
+    ],
+    "allowedHeaders": ["*"],
+    "allowedOperations": ["s3_put", "s3_get", "s3_head", "s3_delete"],
+    "exposeHeaders": ["ETag"],
+    "maxAgeSeconds": 3600
+  }
+]

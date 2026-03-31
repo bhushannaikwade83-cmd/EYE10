@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Package, Inbox, ShoppingBag, RefreshCw, ArrowRight } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { adminTabPath } from './adminTabs'
+import { getAdminInlineErrorMessage, logAdminError } from './adminErrorHandling'
 import './AdminDashboard.css'
 
 function formatTs(value) {
@@ -31,7 +32,7 @@ export function AdminDashboard() {
 
   const load = useCallback(async () => {
     if (!supabase) {
-      setError('Supabase is not configured.')
+      setError(getAdminInlineErrorMessage('dashboard metrics'))
       setLoading(false)
       return
     }
@@ -83,8 +84,8 @@ export function AdminDashboard() {
         lastOrderAt: formatTs(lastOrdRes.data?.created_at),
       })
     } catch (e) {
-      console.error(e)
-      setError(e?.message || 'Failed to load stats')
+      logAdminError('load dashboard metrics', e)
+      setError(getAdminInlineErrorMessage('dashboard metrics'))
     } finally {
       setLoading(false)
     }
@@ -101,7 +102,7 @@ export function AdminDashboard() {
       <div className="admin-dashboard__head">
         <div>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Live counts from Supabase. Use the sidebar for detailed management — bookmark URLs like{' '}
+            Live business metrics. Use the sidebar for detailed management — bookmark URLs like{' '}
             <code>/admin?tab=orders</code>.
           </p>
         </div>

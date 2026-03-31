@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import Navbar from './components/Navbar'
-import EventBanner from './components/EventBanner'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import Breadcrumbs from './components/Breadcrumbs'
@@ -42,7 +41,6 @@ function AppChrome() {
       {!isAdminRoute ? (
         <>
           <Navbar />
-          <EventBanner />
           <Breadcrumbs />
         </>
       ) : null}

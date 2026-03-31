@@ -127,7 +127,7 @@ function GoogleReviewAssistant() {
     if (GOOGLE_REVIEW_URL) {
       window.open(GOOGLE_REVIEW_URL, '_blank', 'noopener,noreferrer')
     } else {
-      toast('Set VITE_GOOGLE_REVIEW_URL to open Google review page directly.')
+      toast('Review page is not available right now. Please try again later.')
     }
 
     setReviewSubmitted(true)
@@ -156,8 +156,7 @@ function GoogleReviewAssistant() {
     }
     if (result.skipped && result.reason === 'not-configured') {
       toast.error(
-        result.detail ||
-          'Email is not configured. Add BREVO_API_KEY and BREVO_SENDER_EMAIL (or legacy VITE_BREVO_*), assign to Production, redeploy, then check Vercel → Logs for this function.'
+        result.detail || 'Email delivery is currently unavailable. Please try again later.'
       )
       return
     }

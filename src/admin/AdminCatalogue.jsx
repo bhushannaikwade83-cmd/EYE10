@@ -11,6 +11,7 @@ import {
   storagePathForCatalogueItem,
   syncLegacyCatalogueFromItems,
 } from '../utils/catalogue'
+import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 
 const MAX_PDF_BYTES = 24 * 1024 * 1024
 
@@ -27,7 +28,8 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       await saveContent(mergeSiteContent(synced))
       toast.success('Catalogue saved')
     } catch (err) {
-      toast.error(err?.message || 'Save failed')
+      logAdminError('save catalogue', err)
+      toast.error(getAdminErrorMessage('save catalogue'))
     } finally {
       setSaving(false)
     }
@@ -87,7 +89,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     if (!file) return
     const { data: { session } = {} } = await supabase.auth.getSession()
     if (!canUseAdminStorage() || !session?.user) {
-      toast.error('Sign in and configure storage (Supabase Storage or B2 — see .env.example).')
+      toast.error('Please sign in and ensure media service is available.')
       return
     }
     if (file.type !== 'application/pdf') {
@@ -128,11 +130,11 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       await persist(nextDraft)
       toast.success('PDF uploaded')
     } catch (err) {
-      console.error(err)
+      logAdminError('upload catalogue PDF', err, { storagePath })
       toast.error(
         err?.code === 'storage/unauthorized'
-          ? 'Upload denied: check Storage policies and that your user is in table public.admins.'
-          : err?.message || 'Upload failed.'
+          ? 'Upload was denied. Please verify your access permissions.'
+          : getAdminErrorMessage('upload catalogue PDF')
       )
     } finally {
       setUploadingId(null)
@@ -150,8 +152,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       <h2>Product catalogues (PDF by brand)</h2>
       <p className="admin-muted">
         Add one row per brand. Shoppers see each link on Brands, Products, and the footer. Files upload to{' '}
-        <code>catalogue/brands/…</code> (Supabase Storage or Backblaze B2 when <code>VITE_STORAGE_BACKEND=b2</code>;
-        max 25 MB).
+        <code>catalogue/brands/…</code> (max 25 MB).
       </p>
 
       <div className="admin-actions-row" style={{ marginTop: '12px' }}>

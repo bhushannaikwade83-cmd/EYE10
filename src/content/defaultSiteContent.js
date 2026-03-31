@@ -46,15 +46,6 @@ export const defaultSiteContent = {
     twitter: '',
     youtube: '',
   },
-  eventBanner: {
-    enabled: true,
-    title: 'Demo Event Banner: Republic Day Offer',
-    subtitle: 'Flat 20% off on selected premium frames for a limited time.',
-    buttonText: 'View Offers',
-    buttonUrl: '/products',
-    startDate: '',
-    endDate: '',
-  },
   /** Legacy single PDF; kept in sync with first `catalogueItems` entry when saving from Admin. */
   catalogue: {
     brandName: '',
@@ -90,20 +81,7 @@ export const defaultSiteContent = {
   brandsSection: {
     heading: 'Brands We Offer',
     subtitle: "Premium eyewear from world's leading brands",
-    items: [
-      { name: 'Ray-Ban', logo: 'RB' },
-      { name: 'Oakley', logo: 'OK' },
-      { name: 'Gucci', logo: 'GC' },
-      { name: 'Prada', logo: 'PR' },
-      { name: 'Versace', logo: 'VS' },
-      { name: 'Tom Ford', logo: 'TF' },
-      { name: 'Dior', logo: 'DR' },
-      { name: 'Chanel', logo: 'CH' },
-      { name: 'Armani', logo: 'AR' },
-      { name: 'Burberry', logo: 'BR' },
-      { name: 'Polo', logo: 'PL' },
-      { name: 'Hugo Boss', logo: 'HB' },
-    ],
+    items: [],
   },
 }
 
@@ -111,20 +89,6 @@ function mergeCatalogueItems(remote) {
   const raw = remote.catalogueItems
   if (Array.isArray(raw) && raw.length > 0) {
     return raw.filter(Boolean).slice(0, 40)
-  }
-  const c = remote.catalogue
-  if (c && String(c.pdfUrl || '').trim()) {
-    return [
-      {
-        id: 'legacy',
-        brandName: String(c.brandName || 'Catalogue').trim() || 'Catalogue',
-        title: String(c.title || c.brandName || 'Download catalogue').trim() || 'Download catalogue',
-        pdfUrl: String(c.pdfUrl).trim(),
-        storagePath: String(c.storagePath || '').trim(),
-        fileName: String(c.fileName || '').trim(),
-        updatedAt: c.updatedAt || '',
-      },
-    ]
   }
   return []
 }
@@ -160,10 +124,6 @@ export const mergeSiteContent = (remote = {}) => ({
   socialLinks: {
     ...defaultSiteContent.socialLinks,
     ...(remote.socialLinks || {}),
-  },
-  eventBanner: {
-    ...defaultSiteContent.eventBanner,
-    ...(remote.eventBanner || {}),
   },
   catalogueItems: mergeCatalogueItems(remote),
   catalogue: {

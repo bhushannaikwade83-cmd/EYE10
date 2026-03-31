@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Inbox, RefreshCw, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../supabase/client'
+import { getAdminErrorMessage, getAdminInlineErrorMessage, logAdminError } from './adminErrorHandling'
 import './AdminEnquiries.css'
 
 const STATUS_OPTIONS = [
@@ -34,7 +35,7 @@ export function AdminEnquiries() {
 
   const load = useCallback(async () => {
     if (!supabase) {
-      setError('Supabase is not configured.')
+      setError(getAdminInlineErrorMessage('enquiries'))
       setLoading(false)
       return
     }
@@ -54,8 +55,8 @@ export function AdminEnquiries() {
       }))
       setItems(list)
     } catch (e) {
-      console.error(e)
-      setError(e?.message || 'Failed to load enquiries')
+      logAdminError('load enquiries', e)
+      setError(getAdminInlineErrorMessage('enquiries'))
       setItems([])
     } finally {
       setLoading(false)
@@ -99,8 +100,8 @@ export function AdminEnquiries() {
       setItems((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x)))
       toast.success('Status updated')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Update failed')
+      logAdminError('update enquiry status', e, { id, status })
+      toast.error(getAdminErrorMessage('update enquiry status'))
     } finally {
       setSaving(false)
     }
@@ -121,8 +122,8 @@ export function AdminEnquiries() {
       )
       toast.success('Note saved')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Save failed')
+      logAdminError('save enquiry note', e, { selectedId })
+      toast.error(getAdminErrorMessage('save enquiry note'))
     } finally {
       setSaving(false)
     }
@@ -139,8 +140,8 @@ export function AdminEnquiries() {
       if (selectedId === id) setSelectedId('')
       toast.success('Deleted')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Delete failed')
+      logAdminError('delete enquiry', e, { id })
+      toast.error(getAdminErrorMessage('delete enquiry'))
     }
   }
 
@@ -153,8 +154,7 @@ export function AdminEnquiries() {
             Enquiries
           </h2>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Messages from the contact page and product enquiry form. Table <code>enquiries</code>{' '}
-            (Supabase).
+            Messages from the contact page and product enquiry form.
           </p>
         </div>
         <button type="button" className="btn btn-outline" onClick={() => void load()} disabled={loading}>

@@ -5,6 +5,11 @@
   overflow: hidden;
 }
 
+.brands-section .container {
+  position: relative;
+  z-index: 1;
+}
+
 .brands-section::after {
   content: '';
   position: absolute;
@@ -17,6 +22,7 @@
     radial-gradient(circle at 85% 75%, rgb(var(--accent-rgb) / 0.04) 0%, transparent 50%);
   animation: particleFloat 22s ease-in-out infinite;
   z-index: 0;
+  pointer-events: none;
 }
 
 .brands-section::before {
@@ -27,6 +33,7 @@
   right: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--primary-light), transparent);
+  pointer-events: none;
 }
 
 .section-header {

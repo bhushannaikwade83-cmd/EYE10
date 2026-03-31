@@ -2,6 +2,7 @@ import { mergeSiteContent } from '../content/defaultSiteContent'
 import toast from 'react-hot-toast'
 import { mirrorContactToNavbarFooter } from '../utils/siteContact'
 import { syncLegacyCatalogueFromItems } from '../utils/catalogue'
+import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 
 const FIELDS = [
   { key: 'facebook', label: 'Facebook', placeholder: 'https://www.facebook.com/yourpage' },
@@ -31,7 +32,8 @@ export function AdminSocialLinks({ draft, setDraft, saveContent, saving, setSavi
       await saveContent(mergeSiteContent(synced))
       toast.success('Social links saved')
     } catch (e) {
-      toast.error(e?.message || 'Save failed')
+      logAdminError('save social links', e)
+      toast.error(getAdminErrorMessage('save social links'))
     } finally {
       setSaving(false)
     }

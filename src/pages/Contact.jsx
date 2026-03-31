@@ -45,7 +45,7 @@ function Contact() {
     setLoading(true)
 
     if (!supabase) {
-      toast.error('Enquiry form needs Supabase. Configure VITE_SUPABASE_* on this deployment.')
+      toast.error('Enquiry service is temporarily unavailable. Please try again shortly.')
       setLoading(false)
       return
     }
@@ -75,7 +75,7 @@ function Contact() {
       })
     } catch (error) {
       console.error('Error submitting enquiry:', error)
-      toast.error('Failed to submit enquiry. Please try again.')
+      toast.error('We could not submit your enquiry right now. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -4,6 +4,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
 import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
+import { getAdminErrorMessage, getAdminInlineErrorMessage, logAdminError } from './adminErrorHandling'
 import './AdminProducts.css'
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -182,8 +183,8 @@ export function AdminProducts() {
       }))
       setProducts(list)
     } catch (e) {
-      console.error(e)
-      setError(e?.message || 'Failed to load products')
+      logAdminError('load products', e)
+      setError(getAdminInlineErrorMessage('products'))
       setProducts([])
     } finally {
       setLoading(false)
@@ -314,7 +315,7 @@ export function AdminProducts() {
   }
 
   const uploadFilesToProduct = async (productId, imageFiles, videoFiles) => {
-    if (!canUseAdminStorage()) throw new Error('Storage is not configured (Supabase Storage or B2)')
+    if (!canUseAdminStorage()) throw new Error('Media service is not available.')
     const imageUploads = []
     const videoUploads = []
 
@@ -377,10 +378,7 @@ export function AdminProducts() {
   }
 
   const handleCreateOrUpdate = async () => {
-    if (!supabase) {
-      toast.error('Supabase is not configured.')
-      return
-    }
+    if (!supabase) return toast.error(getAdminInlineErrorMessage('products'))
 
     // Basic validation
     if (!form.name.trim()) return toast.error('Product name is required.')
@@ -471,8 +469,8 @@ export function AdminProducts() {
       setPendingAddImages([])
       setPendingAddVideos([])
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Save failed')
+      logAdminError('save product', e, { mode, selectedId })
+      toast.error(getAdminErrorMessage('save product'))
     } finally {
       setSaving(false)
     }
@@ -499,8 +497,8 @@ export function AdminProducts() {
       await refresh()
       startAdd()
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Delete failed')
+      logAdminError('delete product', e, { selectedId })
+      toast.error(getAdminErrorMessage('delete product'))
     } finally {
       setDeletingId('')
     }
@@ -508,7 +506,7 @@ export function AdminProducts() {
 
   const handleEditUploadImages = async (files) => {
     if (!selectedId || !supabase) return
-    if (!canUseAdminStorage()) return toast.error('Storage is not configured (Supabase Storage or B2).')
+    if (!canUseAdminStorage()) return toast.error('Media service is not available.')
     const list = Array.from(files || [])
     if (list.length === 0) return
 
@@ -536,8 +534,8 @@ export function AdminProducts() {
 
       toast.success('Images uploaded.')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Upload failed')
+      logAdminError('upload product images', e, { selectedId })
+      toast.error(getAdminErrorMessage('upload product images'))
     } finally {
       setSaving(false)
     }
@@ -545,7 +543,7 @@ export function AdminProducts() {
 
   const handleEditUploadVideos = async (files) => {
     if (!selectedId || !supabase) return
-    if (!canUseAdminStorage()) return toast.error('Storage is not configured (Supabase Storage or B2).')
+    if (!canUseAdminStorage()) return toast.error('Media service is not available.')
     const list = Array.from(files || [])
     if (list.length === 0) return
 
@@ -573,8 +571,8 @@ export function AdminProducts() {
 
       toast.success('Videos uploaded.')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Upload failed')
+      logAdminError('upload product videos', e, { selectedId })
+      toast.error(getAdminErrorMessage('upload product videos'))
     } finally {
       setSaving(false)
     }
@@ -598,8 +596,7 @@ export function AdminProducts() {
         <div>
           <h2 style={{ marginTop: 0 }}>Products (CRUD)</h2>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Add/edit/delete products in Supabase table <code>products</code>. Photos and videos are
-            uploaded to Supabase Storage or Backblaze B2 (see <code>VITE_STORAGE_BACKEND</code>).
+            Create, update, and manage products. Photos and videos are uploaded through the media service.
           </p>
         </div>
         <button type="button" className="btn btn-primary" onClick={startAdd}>

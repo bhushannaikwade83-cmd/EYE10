@@ -7,7 +7,7 @@ export function isB2PrivateBucketMode() {
 }
 
 /**
- * Derive S3 object key from stored site data: raw path, friendly B2 URL, or `b2ref://key` from uploads.
+ * Derive a B2 object key from stored site data: raw path, friendly B2 URL, or `b2ref://key` from uploads.
  */
 export function extractB2ObjectKey(stored) {
   const s = String(stored || '').trim()
@@ -67,16 +67,7 @@ export async function resolveB2MediaUrl(stored) {
   const base = String(import.meta.env.VITE_B2_API_BASE_URL || '')
     .trim()
     .replace(/\/$/, '')
-  const apiUrl = base ? `${base}/api/b2-storage` : '/api/b2-storage'
-
-  const r = await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'presignGet', key: objectKey }),
-  })
-  const data = await r.json().catch(() => ({}))
-  if (!r.ok) throw new Error(data.error || `presignGet failed (${r.status})`)
-
-  cache.set(objectKey, { url: data.getUrl, expiresAt: now + CACHE_MS })
-  return data.getUrl
+  const proxyUrl = `${base ? `${base}/api/b2-storage` : '/api/b2-storage'}?action=downloadFile&key=${encodeURIComponent(objectKey)}`
+  cache.set(objectKey, { url: proxyUrl, expiresAt: now + CACHE_MS })
+  return proxyUrl
 }

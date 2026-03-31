@@ -8,12 +8,15 @@ import './AdminLogin.css'
 
 function loginErrorMessage(error) {
   const msg = String(error?.message || '')
-  if (/invalid login credentials|invalid email or password/i.test(msg)) {
-    return 'Invalid email or password. Create the user in Supabase → Authentication.'
+  if (/admin check timed out/i.test(msg)) {
+    return 'Sign-in verification timed out. Please try again.'
   }
-  if (/email not confirmed/i.test(msg)) return 'Confirm your email in Supabase Auth, or disable email confirmation for testing.'
+  if (/invalid login credentials|invalid email or password/i.test(msg)) {
+    return 'Invalid email or password.'
+  }
+  if (/email not confirmed/i.test(msg)) return 'Please confirm your email before signing in.'
   if (/too many requests/i.test(msg)) return 'Too many attempts. Try again in a few minutes.'
-  return msg || 'Login failed'
+  return 'Unable to sign in right now. Please try again.'
 }
 
 function AdminLogin() {
@@ -25,42 +28,19 @@ function AdminLogin() {
 
   useEffect(() => {
     if (location.state?.adminDenied) {
-      toast.error(
-        'Not an admin: add your user id to Supabase table public.admins (user_id = UUID from Authentication).'
-      )
+      toast.error('Access denied. Your account is not authorized for admin access.')
       navigate('/admin/login', { replace: true, state: {} })
     }
     if (location.state?.supabaseMissing) {
-      toast.error(
-        'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY on your host and redeploy.'
-      )
+      toast.error('Service is currently unavailable. Please contact support.')
       navigate('/admin/login', { replace: true, state: {} })
     }
   }, [location.state, navigate])
 
-  useEffect(() => {
-    if (!supabase) return undefined
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
-      const user = session?.user
-      if (!user) return
-      try {
-        const ok = await isAdminUser(user.id)
-        if (ok) navigate('/admin', { replace: true })
-      } catch {
-        /* ignore */
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [navigate])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!supabase) {
-      toast.error(
-        isSupabaseConfigured()
-          ? 'Supabase client failed to initialize. Check env vars and redeploy.'
-          : 'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.'
-      )
+      toast.error('Unable to initialize sign-in service. Please try again shortly.')
       return
     }
     setLoading(true)
@@ -70,17 +50,19 @@ function AdminLogin() {
         email: email.trim(),
         password,
       })
-      if (error) throw error
+      if (error) {
+        console.error('Login error:', error.message)
+        throw error
+      }
+      console.log('Login success:', data)
       const uid = data.user?.id
       const ok = await isAdminUser(uid)
       if (!ok) {
         await supabase.auth.signOut()
-        toast.error(
-          'Signed in, but this user is not in public.admins. Add a row with user_id = your auth user UUID.'
-        )
+        toast.error('Access denied. Your account is not authorized for admin access.')
         return
       }
-      toast.success('Admin login successful')
+      toast.success('Welcome back. You are now signed in.')
       navigate('/admin')
     } catch (error) {
       toast.error(loginErrorMessage(error))
@@ -94,13 +76,13 @@ function AdminLogin() {
   return (
     <AdminShell
       title="Admin login"
-      subtitle="Sign in with a Supabase Auth user that is listed in public.admins."
+      subtitle="Secure sign-in for authorized administrators."
       rightSlot={null}
     >
       <div className="admin-login">
         <div className="admin-login-card card">
           <h2 style={{ marginBottom: '8px' }}>Admin Login</h2>
-          {!configured && (
+          {!configured ? (
             <p
               style={{
                 marginBottom: '16px',
@@ -111,19 +93,17 @@ function AdminLogin() {
                 fontSize: '0.95rem',
               }}
             >
-              Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel → Environment Variables, then
-              redeploy.
+              Sign-in service is currently unavailable. Please contact support.
             </p>
-          )}
+          ) : null}
           <p style={{ color: 'var(--gray-dark)', marginBottom: '12px' }}>
-            Uses <strong>Supabase Auth</strong> (email/password). Create users under Supabase → Authentication.
+            Sign in using your approved administrator account.
           </p>
           <p
             className="review-hint admin-login-hint"
             style={{ marginBottom: '24px', fontSize: '0.9rem', color: 'var(--gray-dark)' }}
           >
-            <strong>Admin access</strong>: Table <code>public.admins</code> — add one row with{' '}
-            <code>user_id</code> equal to the user&apos;s UUID from Authentication → Users.
+            <strong>Note:</strong> Access is restricted to authorized admin users only.
           </p>
 
           <form onSubmit={handleSubmit}>

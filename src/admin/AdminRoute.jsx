@@ -14,6 +14,27 @@ function AdminRoute({ children }) {
       return undefined
     }
 
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      const u = data.session?.user ?? null
+      setUser(u)
+      if (!u) {
+        setIsAdmin(false)
+        setChecking(false)
+        return
+      }
+      try {
+        const ok = await isAdminUser(u.id)
+        setIsAdmin(ok)
+      } catch {
+        setIsAdmin(false)
+      } finally {
+        setChecking(false)
+      }
+    }
+
+    void checkSession()
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const u = session?.user ?? null
       setUser(u)

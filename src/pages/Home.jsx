@@ -126,7 +126,7 @@ function Home() {
             <div className="loading">Loading products...</div>
           ) : featuredProducts.length === 0 ? (
             <div className="no-products">
-              <p>Add products in Supabase or pick featured IDs in Admin. The site does not use mock inventory when Supabase is connected.</p>
+              <p>No featured products are available at the moment.</p>
             </div>
           ) : (
             <div className="products-grid">

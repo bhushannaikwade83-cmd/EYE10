@@ -1,5 +1,6 @@
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import toast from 'react-hot-toast'
+import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 
 const MAX_FEATURED = 8
 
@@ -35,7 +36,8 @@ export function AdminFeaturedProducts({
       await saveContent(mergeSiteContent(draft))
       toast.success('Featured products saved')
     } catch (e) {
-      toast.error(e?.message || 'Save failed')
+      logAdminError('save featured products', e)
+      toast.error(getAdminErrorMessage('save featured products'))
     } finally {
       setSaving(false)
     }
@@ -53,8 +55,8 @@ export function AdminFeaturedProducts({
     <div className="card admin-card">
       <h2>Featured products (homepage)</h2>
       <p className="admin-muted">
-        Choose up to <strong>{MAX_FEATURED}</strong> products from your Supabase <code>products</code>{' '}
-        table. They appear in order listed below. If none are selected, the home page shows the first 8
+        Choose up to <strong>{MAX_FEATURED}</strong> products. They appear in order listed below.
+        If none are selected, the home page shows the first 8
         products automatically.
       </p>
 

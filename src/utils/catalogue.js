@@ -11,9 +11,7 @@ export function storagePathForCatalogueItem(itemId) {
   return `catalogue/brands/${safe}/catalogue.pdf`
 }
 
-/**
- * Normalized list for the storefront: prefers `catalogueItems`, falls back to legacy single `catalogue`.
- */
+/** Normalized catalogue rows for storefront from `catalogueItems` only. */
 export function getCatalogueItems(content) {
   const items = content?.catalogueItems
   if (Array.isArray(items) && items.length > 0) {
@@ -29,20 +27,6 @@ export function getCatalogueItems(content) {
       }))
       .filter((row) => row.brandName && row.pdfUrl)
   }
-  const c = content?.catalogue
-  if (c && String(c.pdfUrl || '').trim()) {
-    return [
-      {
-        id: 'legacy',
-        brandName: String(c.brandName || 'Catalogue').trim() || 'Catalogue',
-        title: String(c.title || 'Download catalogue').trim() || 'Download catalogue',
-        pdfUrl: String(c.pdfUrl).trim(),
-        storagePath: String(c.storagePath || '').trim(),
-        fileName: String(c.fileName || '').trim(),
-        updatedAt: c.updatedAt || '',
-      },
-    ]
-  }
   return []
 }
 
@@ -54,21 +38,19 @@ export function getPrimaryCataloguePdfUrl(content) {
 
 /**
  * PDF for a product brand name: exact case-insensitive match on `brandName`.
- * If there is only one catalogue row, use it when there is no name match (legacy single-PDF behaviour).
  */
 export function getCataloguePdfUrlForBrand(content, brandName) {
   const item = getCatalogueItemForBrand(content, brandName)
   return item?.pdfUrl || ''
 }
 
-/** Resolved row for a product brand, or the only catalogue row when there is just one. */
+/** Resolved row for a product brand by exact case-insensitive name match. */
 export function getCatalogueItemForBrand(content, brandName) {
   const items = getCatalogueItems(content)
   if (!items.length) return null
   const b = String(brandName || '').trim().toLowerCase()
   const match = items.find((i) => String(i.brandName || '').trim().toLowerCase() === b)
   if (match) return match
-  if (items.length === 1) return items[0]
   return null
 }
 
@@ -89,9 +71,18 @@ export function suggestedCatalogueDownloadFilename(item) {
 export async function openCataloguePdfInNewTabAndDownload(item) {
   const raw = String(item?.pdfUrl || '').trim()
   if (!raw) return
-  const url = await resolveB2MediaUrl(raw)
+  // Open a blank tab synchronously to avoid popup blocking.
+  const openedTab = window.open('about:blank', '_blank')
+  if (openedTab) openedTab.opener = null
+  let url = raw
+  try {
+    url = await resolveB2MediaUrl(raw)
+  } catch {
+    url = raw
+  }
   const name = suggestedCatalogueDownloadFilename(item)
-  window.open(url, '_blank', 'noopener,noreferrer')
+  if (openedTab) openedTab.location.href = url
+  else window.open(url, '_blank')
   try {
     const res = await fetch(url, { mode: 'cors' })
     if (!res.ok) return

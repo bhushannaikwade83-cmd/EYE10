@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { RefreshCw, ShoppingBag, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../supabase/client'
+import { getAdminErrorMessage, getAdminInlineErrorMessage, logAdminError } from './adminErrorHandling'
 import './AdminOrders.css'
 
 const STATUS_OPTIONS = [
@@ -43,7 +44,7 @@ export function AdminOrders() {
 
   const load = useCallback(async () => {
     if (!supabase) {
-      setError('Supabase is not configured.')
+      setError(getAdminInlineErrorMessage('orders'))
       setLoading(false)
       return
     }
@@ -63,8 +64,8 @@ export function AdminOrders() {
       }))
       setItems(list)
     } catch (e) {
-      console.error(e)
-      setError(e?.message || 'Failed to load orders')
+      logAdminError('load orders', e)
+      setError(getAdminInlineErrorMessage('orders'))
       setItems([])
     } finally {
       setLoading(false)
@@ -108,8 +109,8 @@ export function AdminOrders() {
       setItems((prev) => prev.map((x) => (x.id === id ? { ...x, status } : x)))
       toast.success('Order status updated')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Update failed')
+      logAdminError('update order status', e, { id, status })
+      toast.error(getAdminErrorMessage('update order status'))
     } finally {
       setSaving(false)
     }
@@ -130,8 +131,8 @@ export function AdminOrders() {
       )
       toast.success('Note saved')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Save failed')
+      logAdminError('save order note', e, { selectedId })
+      toast.error(getAdminErrorMessage('save order note'))
     } finally {
       setSaving(false)
     }
@@ -148,8 +149,8 @@ export function AdminOrders() {
       if (selectedId === id) setSelectedId('')
       toast.success('Deleted')
     } catch (e) {
-      console.error(e)
-      toast.error(e?.message || 'Delete failed')
+      logAdminError('delete order', e, { id })
+      toast.error(getAdminErrorMessage('delete order'))
     }
   }
 
@@ -162,7 +163,7 @@ export function AdminOrders() {
             Orders
           </h2>
           <p className="admin-muted" style={{ marginBottom: 0 }}>
-            Checkout orders from the storefront. Table <code>orders</code> (Supabase).
+            Checkout orders from the storefront.
           </p>
         </div>
         <button type="button" className="btn btn-outline" onClick={() => void load()} disabled={loading}>

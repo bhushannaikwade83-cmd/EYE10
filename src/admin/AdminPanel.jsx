@@ -20,6 +20,7 @@ import { AdminOrders } from './AdminOrders'
 import { AdminShell } from './AdminShell'
 import { AdminCatalogue } from './AdminCatalogue'
 import { AdminSocialLinks } from './AdminSocialLinks'
+import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 import { mirrorContactToNavbarFooter } from '../utils/siteContact'
 import { syncLegacyCatalogueFromItems } from '../utils/catalogue'
 import './AdminPanel.css'
@@ -29,12 +30,12 @@ const TAB_HEADER = {
     title: 'Overview',
     subtitle: 'Metrics, enquiries pipeline, and orders — plus shortcuts to every admin area.',
   },
-  enquiries: { title: 'Enquiries', subtitle: 'Contact and product enquiry leads (Supabase).' },
-  orders: { title: 'Orders', subtitle: 'Checkout orders, line items, and fulfilment status.' },
-  content: { title: 'Website content', subtitle: 'Brand copy, hero, contact, footer, event banner.' },
+  enquiries: { title: 'Enquiries', subtitle: 'Contact and product enquiry leads.' },
+  orders: { title: 'Orders', subtitle: 'Checkout orders, line items, and fulfillment status.' },
+  content: { title: 'Website content', subtitle: 'Brand copy, hero, contact, and footer.' },
   catalogue: { title: 'Catalogue PDF', subtitle: 'Upload and publish the downloadable catalogue.' },
   social: { title: 'Social links', subtitle: 'Facebook, Instagram, X, and YouTube URLs for the footer.' },
-  products: { title: 'Products', subtitle: 'Full CRUD for the products table (Supabase).' },
+  products: { title: 'Products', subtitle: 'Create, edit, and manage the complete product catalog.' },
   featured: { title: 'Featured products', subtitle: 'Homepage featured grid (up to 8).' },
   banners: { title: 'Home banners', subtitle: 'Homepage offer slider (images or video).' },
   coupons: { title: 'Coupons', subtitle: 'Google Review campaign coupon verification.' },
@@ -115,7 +116,8 @@ function AdminPanel() {
       await saveContent(mergeSiteContent(synced))
       toast.success('Website content updated')
     } catch (error) {
-      toast.error(error?.message || 'Failed to save content')
+      logAdminError('save website content', error)
+      toast.error(getAdminErrorMessage('save website content'))
     } finally {
       setSaving(false)
     }
@@ -348,8 +350,8 @@ function AdminPanel() {
 
             <h2>Products (storefront copy)</h2>
             <p className="admin-muted" style={{ marginTop: 0 }}>
-              Product data (name, price, images) comes from the Supabase <code>products</code> table.
-              These fields only control headings and labels on the Products page and Home featured section.
+              Product data (name, price, images) is managed in the Products section.
+              These fields control headings and labels on the Products page and Home featured section.
             </p>
             <input
               className="input"
@@ -447,58 +449,6 @@ function AdminPanel() {
               onChange={(e) => setField('footer', 'description', e.target.value)}
               placeholder="Footer description"
             />
-
-            <h2>Event banner</h2>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input
-                type="checkbox"
-                checked={Boolean(draft.eventBanner?.enabled)}
-                onChange={(e) => setBooleanField('eventBanner', 'enabled', e.target.checked)}
-              />
-              Enable event banner
-            </label>
-            <input
-              className="input"
-              value={draft.eventBanner?.title || ''}
-              onChange={(e) => setField('eventBanner', 'title', e.target.value)}
-              placeholder="Event title"
-            />
-            <input
-              className="input"
-              value={draft.eventBanner?.subtitle || ''}
-              onChange={(e) => setField('eventBanner', 'subtitle', e.target.value)}
-              placeholder="Event subtitle"
-            />
-            <input
-              className="input"
-              value={draft.eventBanner?.buttonText || ''}
-              onChange={(e) => setField('eventBanner', 'buttonText', e.target.value)}
-              placeholder="Button text"
-            />
-            <input
-              className="input"
-              value={draft.eventBanner?.buttonUrl || ''}
-              onChange={(e) => setField('eventBanner', 'buttonUrl', e.target.value)}
-              placeholder="Button URL (e.g. /products or https://...)"
-            />
-            <label>
-              Start date
-              <input
-                className="input"
-                type="date"
-                value={draft.eventBanner?.startDate || ''}
-                onChange={(e) => setField('eventBanner', 'startDate', e.target.value)}
-              />
-            </label>
-            <label>
-              End date
-              <input
-                className="input"
-                type="date"
-                value={draft.eventBanner?.endDate || ''}
-                onChange={(e) => setField('eventBanner', 'endDate', e.target.value)}
-              />
-            </label>
 
             <button className="btn btn-primary admin-panel-submit" type="submit" disabled={saving}>
               {saving ? 'Saving…' : 'Save all website content'}

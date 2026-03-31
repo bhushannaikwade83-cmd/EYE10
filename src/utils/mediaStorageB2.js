@@ -21,28 +21,21 @@ export async function uploadToB2({ storagePath, file, contentType, getAccessToke
   const idToken = await getAccessToken()
   if (!idToken) throw new Error('Sign in required.')
 
-  const r = await fetch(b2StorageApiUrl(), {
+  const params = new URLSearchParams({
+    action: 'uploadFile',
+    key: storagePath,
+    contentType,
+  })
+  const r = await fetch(`${b2StorageApiUrl()}?${params.toString()}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': contentType,
       Authorization: `Bearer ${idToken}`,
     },
-    body: JSON.stringify({
-      action: 'presignPut',
-      key: storagePath,
-      contentType,
-      contentLength: file.size,
-    }),
+    body: file,
   })
   const data = await r.json().catch(() => ({}))
-  if (!r.ok) throw new Error(data.error || `Presign failed (${r.status})`)
-
-  const put = await fetch(data.putUrl, {
-    method: 'PUT',
-    body: file,
-    headers: { 'Content-Type': contentType },
-  })
-  if (!put.ok) throw new Error(`Upload failed: ${put.status}`)
+  if (!r.ok) throw new Error(data.error || `Upload failed (${r.status})`)
 
   const url = data.publicUrl || (data.key ? `b2ref://${data.key}` : '')
   return { url, storagePath }

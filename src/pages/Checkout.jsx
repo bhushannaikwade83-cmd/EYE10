@@ -55,7 +55,7 @@ function Checkout() {
     setLoading(true)
 
     if (!supabase) {
-      toast.error('Orders are unavailable: Supabase is not configured on this deployment.')
+      toast.error('Orders are temporarily unavailable. Please try again shortly.')
       setLoading(false)
       return
     }
@@ -83,7 +83,7 @@ function Checkout() {
       navigate('/orders')
     } catch (error) {
       console.error('Error placing order:', error)
-      toast.error('Failed to place order. Please try again.')
+      toast.error('We could not place your order right now. Please try again.')
     } finally {
       setLoading(false)
     }

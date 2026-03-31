@@ -3,6 +3,7 @@ import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
 import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import toast from 'react-hot-toast'
+import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 
 const MAX_BANNERS = 5
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -77,7 +78,8 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
       await saveContent(mergeSiteContent(draft))
       toast.success('Banner settings saved')
     } catch (e) {
-      toast.error(e?.message || 'Save failed')
+      logAdminError('save home banner settings', e)
+      toast.error(getAdminErrorMessage('save home banner settings'))
     } finally {
       setSaving(false)
     }
@@ -103,7 +105,7 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
     }
     const { data: { session } = {} } = await supabase.auth.getSession()
     if (!canUseAdminStorage() || !session?.user) {
-      toast.error('Sign in and configure storage (Supabase Storage or B2 — see .env.example).')
+      toast.error('Please sign in and ensure media service is available.')
       return
     }
 
@@ -124,8 +126,8 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
       await persist(nextBanners)
       toast.success('Media uploaded')
     } catch (err) {
-      console.error(err)
-      toast.error(err?.message || 'Upload failed. Check Storage policies and admin access.')
+      logAdminError('upload home banner media', err, { bannerId, storagePath })
+      toast.error(getAdminErrorMessage('upload home banner media'))
     }
   }
 
@@ -143,7 +145,8 @@ export function AdminHomeBanners({ draft, setDraft, saveContent, saving, setSavi
       await persist(nextBanners)
       toast.success('Banner removed')
     } catch (e) {
-      toast.error(e?.message || 'Failed to remove')
+      logAdminError('remove home banner', e, { id })
+      toast.error(getAdminErrorMessage('remove home banner'))
     }
   }
 
