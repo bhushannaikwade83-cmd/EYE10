@@ -94,13 +94,13 @@
 
 ---
 
-## Firebase by package (infra only – no margin)
+## Backend infra by package (infra only – no margin)
 
-| Package | Firebase (₹) | What’s included |
+| Package | Backend infra (₹) | What’s included |
 |---------|--------------|------------------|
-| Package 1 | 0 | No Firebase |
-| Package 2 | 1,000 | Firestore, enquiry storage, optional auth |
-| Package 3 | 2,000 | Firestore, auth, analytics, backend support |
+| Package 1 | 0 | No backend infra |
+| Package 2 | 1,000 | Supabase DB, enquiry storage, optional auth |
+| Package 3 | 2,000 | Supabase DB, auth, analytics, backend support |
 
 ---
 

@@ -1,4 +1,4 @@
-/** Normalize Firestore product `features` (array of strings). */
+/** Normalize product `features` (array of strings). */
 export function normalizeFeatureList(product) {
   const raw = product?.features
   if (!Array.isArray(raw)) return []
@@ -6,7 +6,7 @@ export function normalizeFeatureList(product) {
 }
 
 /**
- * Normalize `benefits` from Firestore: strings or { title, subtitle } / { label, text }.
+ * Normalize `benefits`: strings or { title, subtitle } / { label, text }.
  */
 export function normalizeBenefitList(product) {
   const raw = product?.benefits

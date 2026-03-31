@@ -148,12 +148,16 @@ function GoogleReviewAssistant() {
       validTill,
     })
     if (result.ok) {
-      toast.success('Coupon sent to your email.')
+      toast.success(
+        'Coupon sent. If your inbox is empty in a few minutes, check Spam or Promotions.',
+        { duration: 6000 }
+      )
       return
     }
     if (result.skipped && result.reason === 'not-configured') {
       toast.error(
-        'Email is not configured. Set BREVO_API_KEY and BREVO_SENDER_EMAIL in Vercel/server env, then redeploy.'
+        result.detail ||
+          'Email is not configured. Add BREVO_API_KEY and BREVO_SENDER_EMAIL (or legacy VITE_BREVO_*), assign to Production, redeploy, then check Vercel → Logs for this function.'
       )
       return
     }

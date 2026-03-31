@@ -314,7 +314,7 @@ export function AdminProducts() {
   }
 
   const uploadFilesToProduct = async (productId, imageFiles, videoFiles) => {
-    if (!canUseAdminStorage()) throw new Error('Storage not configured (Supabase Storage or B2)')
+    if (!canUseAdminStorage()) throw new Error('Storage is not configured (Supabase Storage or B2)')
     const imageUploads = []
     const videoUploads = []
 
@@ -508,7 +508,7 @@ export function AdminProducts() {
 
   const handleEditUploadImages = async (files) => {
     if (!selectedId || !supabase) return
-    if (!canUseAdminStorage()) return toast.error('Storage not configured (Supabase Storage or B2).')
+    if (!canUseAdminStorage()) return toast.error('Storage is not configured (Supabase Storage or B2).')
     const list = Array.from(files || [])
     if (list.length === 0) return
 
@@ -545,7 +545,7 @@ export function AdminProducts() {
 
   const handleEditUploadVideos = async (files) => {
     if (!selectedId || !supabase) return
-    if (!canUseAdminStorage()) return toast.error('Storage not configured (Supabase Storage or B2).')
+    if (!canUseAdminStorage()) return toast.error('Storage is not configured (Supabase Storage or B2).')
     const list = Array.from(files || [])
     if (list.length === 0) return
 

@@ -1,4 +1,4 @@
--- EYE10 — Supabase schema (replaces Firestore)
+-- EYE10 — Supabase schema
 -- Run in Supabase SQL Editor or via CLI: supabase db push
 
 create table if not exists public.admins (

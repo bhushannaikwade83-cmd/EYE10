@@ -11,6 +11,8 @@ export function isCouponEmailConfigured() {
 
 /**
  * Sends coupon details via our backend API route.
+ * Local dev: Vite serves POST /api/send-coupon-email on the same port (see vite.config.js).
+ * Production: Vercel serverless api/send-coupon-email.js.
  */
 export async function sendCouponEmail({
   customerName,
@@ -29,8 +31,11 @@ export async function sendCouponEmail({
     return { ok: false, skipped: true, reason: 'no-email' }
   }
 
+  const base = String(import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/$/, '')
+  const url = `${base}/api/send-coupon-email`
+
   try {
-    const response = await fetch('/api/send-coupon-email', {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,21 +51,29 @@ export async function sendCouponEmail({
       }),
     })
 
+    const text = await response.text()
+    let parsed = {}
+    try {
+      parsed = text ? JSON.parse(text) : {}
+    } catch {
+      // ignore
+    }
+
     if (!response.ok) {
-      let detail = ''
-      try {
-        const parsed = await response.json()
-        detail = parsed?.error || parsed?.message || ''
-        if (response.status === 503 && /not configured/i.test(detail)) {
-          return { ok: false, skipped: true, reason: 'not-configured', detail }
+      let detail = parsed?.error || parsed?.message || text || ''
+      const missing = Array.isArray(parsed?.missing) ? parsed.missing.join(', ') : ''
+      if (response.status === 503 && /not configured/i.test(String(detail))) {
+        return {
+          ok: false,
+          skipped: true,
+          reason: 'not-configured',
+          detail: missing ? `${detail} Missing: ${missing}.` : detail,
         }
-      } catch (_) {
-        detail = await response.text()
       }
       return { ok: false, detail: `(${response.status}) ${detail}` }
     }
 
-    return { ok: true }
+    return { ok: true, messageId: parsed.messageId ?? null }
   } catch (err) {
     return { ok: false, error: err, detail: err?.message || 'Network error' }
   }

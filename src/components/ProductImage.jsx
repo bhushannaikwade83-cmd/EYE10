@@ -3,7 +3,7 @@ import { useResolvedMediaUrl } from '../hooks/useResolvedMediaUrl'
 const DEFAULT_PH = 'https://via.placeholder.com/300x200?text=EYE10'
 
 /**
- * Product listing / cart image — resolves private Backblaze URLs when configured.
+ * Product listing / cart image helper.
  */
 export function ProductImage({
   src,

@@ -173,7 +173,6 @@ export default async function handler(req, res) {
       return
     }
 
-    // Anonymous read for storefront: private bucket + presigned GET (whitelist keys only).
     if (action === 'presignGet') {
       const key = normalizeKey(body.key)
       if (!key || !isAllowedPrefix(key)) {

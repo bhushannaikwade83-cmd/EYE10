@@ -111,7 +111,7 @@ export async function openCataloguePdfInNewTabAndDownload(item) {
 }
 
 /**
- * Keep legacy `catalogue` in sync with the first item that has a PDF (older code / Firestore).
+ * Keep legacy `catalogue` in sync with the first item that has a PDF (older code compatibility).
  */
 export function syncLegacyCatalogueFromItems(draft) {
   const items = Array.isArray(draft.catalogueItems) ? draft.catalogueItems : []

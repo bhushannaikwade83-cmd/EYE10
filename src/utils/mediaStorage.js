@@ -20,13 +20,11 @@ async function getSupabaseSessionToken() {
  */
 export async function uploadAdminFile({ storagePath, file, contentType }) {
   const ct = contentType || file.type || 'application/octet-stream'
-
   if (isB2StorageBackend()) {
     const { uploadToB2 } = await import('./mediaStorageB2')
     return uploadToB2({ storagePath, file, contentType: ct, getAccessToken: getSupabaseSessionToken })
   }
-
-  if (!supabase) throw new Error('Supabase is not configured (needed for storage when not using B2).')
+  if (!supabase) throw new Error('Supabase is not configured.')
   const { data, error } = await supabase.storage.from('media').upload(storagePath, file, {
     cacheControl: '3600',
     upsert: true,
@@ -41,12 +39,10 @@ export async function uploadAdminFile({ storagePath, file, contentType }) {
 
 export async function deleteAdminFile(storagePath) {
   if (!storagePath) return
-
   if (isB2StorageBackend()) {
     const { deleteFromB2 } = await import('./mediaStorageB2')
     return deleteFromB2({ storagePath, getAccessToken: getSupabaseSessionToken })
   }
-
   if (!supabase) throw new Error('Supabase is not configured.')
   const { error } = await supabase.storage.from('media').remove([storagePath])
   if (error) throw new Error(error.message)

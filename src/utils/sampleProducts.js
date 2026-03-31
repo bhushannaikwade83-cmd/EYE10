@@ -1,6 +1,6 @@
 /**
- * Demo-only product data when Firebase is not configured (local dev without env).
- * When `db` is available, the app uses Firestore `products` only — no sample merge.
+ * Demo-only product data when Supabase is not configured (local dev without env).
+ * When DB is available, the app uses `products` table data only — no sample merge.
  */
 export function getSampleProducts() {
   return [

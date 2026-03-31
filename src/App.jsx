@@ -9,6 +9,7 @@ import ProductComparison from './components/ProductComparison'
 import PrivacyConsent from './components/PrivacyConsent'
 import PriceDropAlerts from './components/PriceDropAlerts'
 import PageTransition from './components/PageTransition'
+import IntroReveal from './components/IntroReveal'
 import Home from './pages/Home'
 import Products from './pages/Products'
 import ProductDetail from './pages/ProductDetail'
@@ -26,9 +27,11 @@ import './App.css'
 function AppChrome() {
   const location = useLocation()
   const isAdminRoute = location.pathname.startsWith('/admin')
+  const isHomeRoute = location.pathname === '/'
 
   return (
     <div className="App app-3d">
+      {!isAdminRoute ? <IntroReveal enabled={isHomeRoute} /> : null}
       <div className="three-scene" aria-hidden="true">
         <span className="three-orb orb-1" />
         <span className="three-orb orb-2" />

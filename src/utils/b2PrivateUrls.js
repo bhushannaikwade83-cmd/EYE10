@@ -1,9 +1,7 @@
-import { b2StorageApiUrl, isB2StorageBackend } from './mediaStorage'
-
-/** Private B2 bucket: storefront loads media via short-lived presigned GET URLs. */
 export function isB2PrivateBucketMode() {
+  const backend = String(import.meta.env.VITE_STORAGE_BACKEND || '').trim().toLowerCase()
   return (
-    isB2StorageBackend() &&
+    backend === 'b2' &&
     String(import.meta.env.VITE_B2_PRIVATE_BUCKET || '').trim().toLowerCase() === 'true'
   )
 }
@@ -66,7 +64,12 @@ export async function resolveB2MediaUrl(stored) {
   const hit = cache.get(objectKey)
   if (hit && hit.expiresAt > now) return hit.url
 
-  const r = await fetch(b2StorageApiUrl(), {
+  const base = String(import.meta.env.VITE_B2_API_BASE_URL || '')
+    .trim()
+    .replace(/\/$/, '')
+  const apiUrl = base ? `${base}/api/b2-storage` : '/api/b2-storage'
+
+  const r = await fetch(apiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'presignGet', key: objectKey }),

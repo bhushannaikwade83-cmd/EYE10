@@ -4,5 +4,10 @@
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/send-coupon-email.js": {
+      "includeFiles": "lib/**"
+    }
+  }
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { isB2PrivateBucketMode, resolveB2MediaUrl } from '../utils/b2PrivateUrls'
 
 /**
- * Resolves Backblaze private-bucket references to a short-lived HTTPS URL when needed.
+ * Resolves media URLs for display.
  * @param {string} storedUrl
  * @returns {{ url: string, loading: boolean }}
  */

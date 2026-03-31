@@ -150,8 +150,8 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       <h2>Product catalogues (PDF by brand)</h2>
       <p className="admin-muted">
         Add one row per brand. Shoppers see each link on Brands, Products, and the footer. Files upload to{' '}
-        <code>catalogue/brands/…</code> (Firebase Storage or Backblaze B2 when <code>VITE_STORAGE_BACKEND=b2</code>;
-        max 25 MB). Deploy <code>storage.rules</code> for Firebase, or configure B2 + Vercel API env vars.
+        <code>catalogue/brands/…</code> (Supabase Storage or Backblaze B2 when <code>VITE_STORAGE_BACKEND=b2</code>;
+        max 25 MB).
       </p>
 
       <div className="admin-actions-row" style={{ marginTop: '12px' }}>
@@ -245,7 +245,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                 />
               </label>
               <p className="admin-muted" style={{ marginTop: '6px', marginBottom: 0, fontSize: '12px' }}>
-                Pasting a URL clears the Firebase file reference for this row.
+                Pasting a URL clears the storage file reference for this row.
               </p>
 
               {row.pdfUrl ? (

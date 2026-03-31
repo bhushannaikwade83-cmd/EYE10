@@ -66,7 +66,7 @@ export const defaultSiteContent = {
   },
   /** Per-brand PDF catalogues: { id, brandName, title?, pdfUrl, storagePath?, fileName?, updatedAt? } */
   catalogueItems: [],
-  /** Up to 8 product document IDs from Firestore `products` (shown on Home featured section). */
+  /** Up to 8 product IDs from `products` (shown on Home featured section). */
   featuredProductIds: [],
   /**
    * Up to 5 offer slides on Home (images or video). Set via Admin → Home banners.
@@ -84,7 +84,7 @@ export const defaultSiteContent = {
     viewAllLabel: 'View All',
   },
   /**
-   * Brands strip: heading/subtitle editable in Admin. `items` is fallback when Firestore has no product brands.
+   * Brands strip: heading/subtitle editable in Admin. `items` is fallback when products have no brand names yet.
    * Each item: { name: string, logo: string } (logo = short initials shown in the circle).
    */
   brandsSection: {
