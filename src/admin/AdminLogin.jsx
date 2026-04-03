@@ -100,10 +100,11 @@ function AdminLogin() {
     }
     return (
       <>
-        This deployment was built without public Supabase settings. In Vercel (or your host), set{' '}
-        <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> for <strong>Production</strong>{' '}
-        (and Preview if you use it), then <strong>redeploy</strong>. These must be present at{' '}
-        <em>build</em> time, not only as runtime secrets.
+        This deployment was built without public Supabase settings. In Vercel (or your host), set either{' '}
+        <code>VITE_SUPABASE_URL</code> + <code>VITE_SUPABASE_ANON_KEY</code>, or the same values as{' '}
+        <code>SUPABASE_URL</code> + <code>SUPABASE_ANON_KEY</code> (Supabase integration names), for{' '}
+        <strong>Production</strong> (and Preview if you use it), then <strong>redeploy</strong>. They must be
+        available when the site is <em>built</em>, not added only as runtime-only secrets.
       </>
     )
   })()

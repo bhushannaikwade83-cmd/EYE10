@@ -139,91 +139,121 @@
   margin-bottom: 16px;
 }
 
-.coupon-wheel-wrap {
-  --wheel-size: min(300px, calc(100vw - 48px));
-  --wheel-label-offset: 96px;
-  position: relative;
-  width: var(--wheel-size);
-  max-width: 100%;
-  margin: 12px auto 20px;
+/* Scratch card (replaces spin wheel) */
+.coupon-scratch-wrap {
+  max-width: 400px;
+  margin: 20px auto 8px;
 }
 
-.coupon-wheel-pointer {
-  text-align: center;
-  color: var(--dark);
-  font-size: clamp(20px, 5vw, 26px);
-  line-height: 1;
-  margin-bottom: 8px;
-  font-weight: 800;
-  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.12));
-}
-
-.coupon-wheel {
-  width: var(--wheel-size);
-  height: var(--wheel-size);
+.coupon-scratch-card {
   position: relative;
-  margin: 0 auto;
-  transition: transform 3.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  max-height: 220px;
+  border-radius: 16px;
   overflow: hidden;
-  will-change: transform;
+  border: 2px solid rgb(var(--primary-rgb) / 0.45);
+  box-shadow:
+    0 14px 36px rgb(0 0 0 / 0.1),
+    0 0 0 1px rgb(var(--primary-rgb) / 0.12);
+  background: var(--light-gray);
 }
 
-.coupon-wheel-disk {
+.coupon-scratch-prize {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  border: 8px solid var(--white);
-  box-shadow:
-    0 12px 32px rgb(0 0 0 / 0.12),
-    0 4px 12px rgb(0 0 0 / 0.08),
-    inset 0 2px 0 rgb(255 255 255 / 0.5);
-  overflow: hidden;
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  text-align: center;
+  background: linear-gradient(165deg, var(--light) 0%, var(--light-gray) 55%, rgb(var(--primary-rgb) / 0.08) 100%);
 }
 
-.coupon-wheel-label {
+.coupon-scratch-prize-inner {
+  width: 100%;
+}
+
+.coupon-scratch-prize-inner--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--error-dark);
+}
+
+.coupon-scratch-brand {
+  font-family: var(--font-family-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--primary-dark);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.coupon-scratch-offer {
+  font-family: var(--font-family-heading);
+  font-size: clamp(1.1rem, 3.5vw, 1.35rem);
+  font-weight: 700;
+  color: var(--secondary);
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.coupon-scratch-code {
+  font-family: var(--font-family-heading);
+  font-size: clamp(1.05rem, 3.2vw, 1.2rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--primary-dark);
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgb(var(--primary-rgb) / 0.12);
+  border: 1px solid rgb(var(--primary-rgb) / 0.35);
+  word-break: break-all;
+}
+
+.coupon-scratch-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--gray-dark);
+  line-height: 1.4;
+}
+
+.coupon-scratch-canvas {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  transform-origin: 50% 50%;
-  width: min(92px, 30vw);
-  max-width: 96px;
-  margin-top: 0;
-  text-align: center;
-  pointer-events: none;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
   z-index: 2;
 }
 
-.coupon-wheel-label-text {
-  display: inline-block;
-  font-size: clamp(10px, 3.1vw, 12px);
-  line-height: 1.16;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  color: #111827;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
-  transform: rotate(calc(-1 * var(--label-angle)));
-  hyphens: auto;
-  word-break: break-word;
-  white-space: normal;
-  padding: 0 2px;
+.coupon-scratch-canvas:active {
+  cursor: grabbing;
+}
+
+.coupon-scratch-fallback {
+  display: block;
+  width: 100%;
+  max-width: 400px;
+  margin: 12px auto 0;
+  font-size: 0.9rem;
+}
+
+.coupon-actions--scratch {
+  margin-top: 8px;
 }
 
 @media (max-width: 520px) {
-  .coupon-wheel-wrap {
-    --wheel-size: min(272px, calc(100vw - 40px));
-    --wheel-label-offset: 82px;
-  }
-
-  .coupon-wheel-label {
-    width: min(74px, 26vw);
-  }
-
-  .coupon-wheel-label-text {
-    font-size: clamp(8px, 2.6vw, 10px);
-    line-height: 1.1;
-  }
-
   .coupon-flow-card {
     padding: 16px 14px;
   }
@@ -232,20 +262,14 @@
     font-size: 1.05rem;
     line-height: 1.35;
   }
-}
 
-@media (max-width: 380px) {
-  .coupon-wheel-wrap {
-    --wheel-size: min(252px, calc(100vw - 28px));
-    --wheel-label-offset: 74px;
+  .coupon-scratch-card {
+    max-height: 200px;
+    border-radius: 14px;
   }
 
-  .coupon-wheel-label {
-    width: min(66px, 24vw);
-  }
-
-  .coupon-wheel-label-text {
-    font-size: 8px;
+  .coupon-scratch-prize {
+    padding: 16px 12px;
   }
 }
 

@@ -3,6 +3,31 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 
 export default defineConfig(({ mode }) => {
+  /**
+   * Browser code only sees `import.meta.env.VITE_*` unless we inject here.
+   * Vercel often sets `SUPABASE_URL` + `SUPABASE_ANON_KEY` (no VITE_ prefix) — map those into the client bundle at build time.
+   * Never inject service_role or other secrets.
+   */
+  const envAll = loadEnv(mode, process.cwd(), '')
+  const supabasePublicUrl = String(
+    envAll.VITE_SUPABASE_URL ||
+      envAll.SUPABASE_URL ||
+      envAll.NEXT_PUBLIC_SUPABASE_URL ||
+      process.env.VITE_SUPABASE_URL ||
+      process.env.SUPABASE_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      ''
+  ).trim()
+  const supabasePublicAnon = String(
+    envAll.VITE_SUPABASE_ANON_KEY ||
+      envAll.SUPABASE_ANON_KEY ||
+      envAll.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.VITE_SUPABASE_ANON_KEY ||
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      ''
+  ).trim()
+
   const readDotEnvValue = (key) => {
     try {
       const raw = fs.readFileSync('.env', 'utf8')
@@ -26,6 +51,10 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(supabasePublicUrl),
+      'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(supabasePublicAnon),
+    },
     plugins: [
       react(),
       {
