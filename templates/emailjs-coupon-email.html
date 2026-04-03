@@ -1,8 +1,13 @@
 <!--
   EmailJS — paste into Email Templates → Content (HTML).
 
-  Settings in EmailJS:
-  - To Email: {{to_email}}
+  CRITICAL — who receives the mail (the customer from the website form):
+  In the EmailJS template editor, open template SETTINGS (not only the HTML body).
+  Set "To email" / recipient to:  {{to_email}}
+  Do NOT leave a fixed address like your@gmail.com — that sends every coupon to you instead of the customer.
+  Aliases also sent by the app: {{customer_email}}  {{email}}  {{user_email}}
+
+  Other settings:
   - From Name: EYE10 (or your connected sender)
   - Subject: {{subject_line}}
 -->
