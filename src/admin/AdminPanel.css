@@ -156,6 +156,14 @@
   contain: layout style;
 }
 
+.admin-catalogue-published-card {
+  contain: layout style;
+}
+
+.admin-catalogue-published-card a {
+  cursor: pointer;
+}
+
 .admin-muted {
   color: var(--gray-dark);
   font-size: 0.95rem;
