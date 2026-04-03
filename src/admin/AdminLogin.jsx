@@ -19,12 +19,19 @@ function loginErrorMessage(error) {
   return 'Unable to sign in right now. Please try again.'
 }
 
+function supabaseEnvStatus() {
+  const url = String(import.meta.env.VITE_SUPABASE_URL || '').trim()
+  const anon = String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim()
+  return { url, anon, bothSet: Boolean(url && anon) }
+}
+
 function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+  const { url: envUrl, anon: envAnon } = supabaseEnvStatus()
 
   useEffect(() => {
     if (location.state?.adminDenied) {
@@ -73,6 +80,34 @@ function AdminLogin() {
 
   const configured = isSupabaseConfigured() && supabase
 
+  const configHelp = (() => {
+    if (configured) return null
+    if (import.meta.env.DEV) {
+      const parts = []
+      if (!envUrl) parts.push('VITE_SUPABASE_URL')
+      if (!envAnon) parts.push('VITE_SUPABASE_ANON_KEY')
+      const missing = parts.length ? parts.join(' and ') : 'Supabase client'
+      return (
+        <>
+          <strong>Supabase is not available in this dev build.</strong>{' '}
+          {parts.length > 0
+            ? `Add ${missing} to your project root <code>.env</code> (see <code>.env.example</code>). `
+            : null}
+          After editing <code>.env</code>, stop and restart <code>npm run dev</code> so Vite picks up{' '}
+          <code>VITE_*</code> variables.
+        </>
+      )
+    }
+    return (
+      <>
+        This deployment was built without public Supabase settings. In Vercel (or your host), set{' '}
+        <code>VITE_SUPABASE_URL</code> and <code>VITE_SUPABASE_ANON_KEY</code> for <strong>Production</strong>{' '}
+        (and Preview if you use it), then <strong>redeploy</strong>. These must be present at{' '}
+        <em>build</em> time, not only as runtime secrets.
+      </>
+    )
+  })()
+
   return (
     <AdminShell
       title="Admin login"
@@ -91,9 +126,10 @@ function AdminLogin() {
                 background: 'rgb(var(--accent-rgb) / 0.12)',
                 color: 'var(--dark)',
                 fontSize: '0.95rem',
+                lineHeight: 1.5,
               }}
             >
-              Sign-in service is currently unavailable. Please contact support.
+              Sign-in is unavailable until Supabase is configured for the browser. {configHelp}
             </p>
           ) : null}
           <p style={{ color: 'var(--gray-dark)', marginBottom: '12px' }}>
