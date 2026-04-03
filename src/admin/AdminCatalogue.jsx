@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Plus, Trash2, Upload } from 'lucide-react'
+import { Download, Plus, Trash2, Upload } from 'lucide-react'
 import { supabase } from '../supabase/client'
 import { canUseAdminStorage, uploadAdminFile } from '../utils/mediaStorage'
 import { mergeSiteContent } from '../content/defaultSiteContent'
@@ -15,16 +15,39 @@ import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 
 const MAX_PDF_BYTES = 24 * 1024 * 1024
 
+function normalizeBrand(value) {
+  return String(value || '').trim().toLowerCase()
+}
+
+function cloneCatalogueRows(rows) {
+  const list = Array.isArray(rows) ? rows : []
+  return list.map((row) => ({
+    id: row?.id != null && String(row.id).trim() ? String(row.id) : newCatalogueItemId(),
+    brandName: String(row.brandName || ''),
+    title: String(row.title || ''),
+    pdfUrl: String(row.pdfUrl || ''),
+    storagePath: String(row.storagePath || ''),
+    fileName: String(row.fileName || ''),
+    updatedAt: row.updatedAt || '',
+  }))
+}
+
 function catalogueValidationError(items) {
   const list = Array.isArray(items) ? items : []
+  const seen = new Set()
   for (let i = 0; i < list.length; i++) {
     const row = list[i]
     const brand = String(row?.brandName || '').trim()
+    const brandKey = normalizeBrand(brand)
     const title = String(row?.title || '').trim()
     const pdf = String(row?.pdfUrl || '').trim()
     if (!brand) {
       return `Row ${i + 1}: Brand name is required.`
     }
+    if (seen.has(brandKey)) {
+      return `Row ${i + 1}: Brand "${brand}" is already added. Use each brand only once.`
+    }
+    seen.add(brandKey)
     if (!title) {
       return `Row ${i + 1}: Link label is required.`
     }
@@ -36,23 +59,52 @@ function catalogueValidationError(items) {
 }
 
 export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent }) {
+  const [items, setItems] = useState([])
   const [uploadingId, setUploadingId] = useState(null)
   const [pendingUploadRowId, setPendingUploadRowId] = useState(null)
   const hiddenFileRef = useRef(null)
+  const draftRef = useRef(draft)
+  const itemsRef = useRef(items)
 
-  const items = Array.isArray(draft.catalogueItems) ? draft.catalogueItems : []
+  useEffect(() => {
+    draftRef.current = draft
+  }, [draft])
 
-  const persist = async (nextDraft) => {
-    const errMsg = catalogueValidationError(nextDraft.catalogueItems)
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  const duplicateBrandIds = (() => {
+    const map = new Map()
+    const dupes = new Set()
+    for (const row of items) {
+      const key = normalizeBrand(row?.brandName)
+      if (!key) continue
+      const firstId = map.get(key)
+      if (!firstId) {
+        map.set(key, row.id)
+      } else {
+        dupes.add(firstId)
+        dupes.add(row.id)
+      }
+    }
+    return dupes
+  })()
+
+  const persist = async () => {
+    const errMsg = catalogueValidationError(items)
     if (errMsg) {
       toast.error(errMsg)
       return
     }
     setSaving(true)
     try {
+      const base = draftRef.current
+      const nextDraft = { ...base, catalogueItems: items }
       const synced = syncLegacyCatalogueFromItems(mirrorContactToNavbarFooter(nextDraft))
       setDraft(synced)
       await saveContent(mergeSiteContent(synced))
+      setItems(cloneCatalogueRows(synced.catalogueItems))
       toast.success('Catalogue saved')
     } catch (err) {
       logAdminError('save catalogue', err)
@@ -62,32 +114,45 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     }
   }
 
+  const loadFromWebsite = () => {
+    const fromServer = cloneCatalogueRows(draftRef.current?.catalogueItems)
+    if (fromServer.length === 0) {
+      toast('No saved catalogue on the website yet.', { icon: 'ℹ️' })
+      return
+    }
+    if (items.length > 0) {
+      const ok = window.confirm(
+        'Replace this blank/draft list with the catalogue currently saved on the website?'
+      )
+      if (!ok) return
+    }
+    setItems(fromServer)
+    toast.success('Loaded from website. Edit if needed, then Save catalogue list.')
+  }
+
   const updateItem = (id, patch) => {
-    setDraft((prev) => {
-      const list = Array.isArray(prev.catalogueItems) ? [...prev.catalogueItems] : []
-      const idx = list.findIndex((x) => x.id === id)
-      if (idx < 0) return prev
-      list[idx] = { ...list[idx], ...patch }
-      return { ...prev, catalogueItems: list }
+    setItems((list) => {
+      const next = [...list]
+      const idx = next.findIndex((x) => x.id === id)
+      if (idx < 0) return list
+      next[idx] = { ...next[idx], ...patch }
+      return next
     })
   }
 
   const addRow = () => {
-    setDraft((prev) => ({
-      ...prev,
-      catalogueItems: [
-        ...(Array.isArray(prev.catalogueItems) ? prev.catalogueItems : []),
-        {
-          id: newCatalogueItemId(),
-          brandName: '',
-          title: '',
-          pdfUrl: '',
-          storagePath: '',
-          fileName: '',
-          updatedAt: '',
-        },
-      ],
-    }))
+    setItems((list) => [
+      ...list,
+      {
+        id: newCatalogueItemId(),
+        brandName: '',
+        title: '',
+        pdfUrl: '',
+        storagePath: '',
+        fileName: '',
+        updatedAt: '',
+      },
+    ])
   }
 
   const removeRow = (row) => {
@@ -96,10 +161,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     )
     if (!ok) return
 
-    setDraft((prev) => {
-      const list = Array.isArray(prev.catalogueItems) ? prev.catalogueItems.filter((x) => x.id !== row.id) : []
-      return { ...prev, catalogueItems: list }
-    })
+    setItems((list) => list.filter((x) => x.id !== row.id))
     toast('Row removed from draft. Click Save catalogue list to publish.', { icon: 'ℹ️' })
   }
 
@@ -139,18 +201,18 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
         contentType: 'application/pdf',
       })
       const updatedAt = new Date().toISOString()
-      setDraft((prev) => {
-        const list = Array.isArray(prev.catalogueItems) ? [...prev.catalogueItems] : []
-        const idx = list.findIndex((x) => x.id === row.id)
-        if (idx < 0) return prev
-        list[idx] = {
-          ...list[idx],
+      setItems((list) => {
+        const next = [...list]
+        const idx = next.findIndex((x) => x.id === row.id)
+        if (idx < 0) return list
+        next[idx] = {
+          ...next[idx],
           pdfUrl: url,
           storagePath,
           fileName: file.name,
           updatedAt,
         }
-        return { ...prev, catalogueItems: list }
+        return next
       })
       toast.success('PDF attached. Click “Save catalogue list” to publish.')
     } catch (err) {
@@ -182,12 +244,8 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     e.target.value = ''
     setPendingUploadRowId(null)
     if (!file || !rowId) return
-    const row = items.find((x) => x.id === rowId)
+    const row = itemsRef.current.find((x) => x.id === rowId)
     if (row) void runUploadForRow(file, row)
-  }
-
-  const handleSaveMeta = () => {
-    void persist(draft)
   }
 
   const linkLabel = (row) => (row.title || '').trim() || row.brandName || 'Download'
@@ -195,7 +253,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
   const storageReady = canUseAdminStorage()
 
   return (
-    <div className="card admin-card">
+    <div className="card admin-card admin-catalogue-root">
       <input
         ref={hiddenFileRef}
         type="file"
@@ -208,8 +266,8 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
 
       <h2>Product catalogues (PDF by brand)</h2>
       <p className="admin-muted">
-        Add one row per brand. Shoppers see each link on Brands, Products, and the footer. Files upload to{' '}
-        <code>catalogue/brands/…</code> (max 25 MB). All fields are required; nothing is saved until you click{' '}
+        This screen always opens with a <strong>blank list</strong> so you can add brands step by step. Live site data
+        is not loaded until you choose <strong>Load from website</strong>. Nothing is published until you click{' '}
         <strong>Save catalogue list</strong>.
       </p>
 
@@ -218,15 +276,19 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
           <Plus size={18} />
           Add brand PDF
         </button>
-        <button type="button" className="btn btn-outline" disabled={saving} onClick={handleSaveMeta}>
+        <button type="button" className="btn btn-outline" onClick={loadFromWebsite}>
+          <Download size={18} />
+          Load from website
+        </button>
+        <button type="button" className="btn btn-outline" disabled={saving} onClick={() => void persist()}>
           {saving ? 'Saving…' : 'Save catalogue list'}
         </button>
       </div>
 
       {items.length === 0 ? (
         <p className="admin-muted" style={{ marginTop: '20px' }}>
-          No brand PDFs yet. Click &quot;Add brand PDF&quot; — legacy single PDF is loaded automatically if it exists in
-          site content.
+          No rows yet. Click <strong>Add brand PDF</strong> to start, or <strong>Load from website</strong> to edit what
+          is already live.
         </p>
       ) : (
         <div className="admin-catalogue-list" style={{ marginTop: '20px', display: 'grid', gap: '16px' }}>
@@ -260,6 +322,11 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                   required
                   autoComplete="off"
                 />
+                {duplicateBrandIds.has(row.id) ? (
+                  <p className="admin-muted" style={{ marginTop: '6px', marginBottom: 0, color: '#b45309' }}>
+                    This brand is already added below. Keep only one row per brand.
+                  </p>
+                ) : null}
               </label>
 
               <label className="admin-label" style={{ marginTop: '10px', display: 'block' }}>
