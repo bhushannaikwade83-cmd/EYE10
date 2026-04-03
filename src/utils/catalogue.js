@@ -1,6 +1,39 @@
-import { buildB2DownloadProxyUrl, resolveB2MediaUrl } from './b2PrivateUrls'
+import { buildB2DownloadProxyUrl, extractB2ObjectKey, resolveB2MediaUrl } from './b2PrivateUrls'
 
 /** PDF catalogues with per–brand labels (site content). */
+
+/**
+ * Object key for `deleteAdminFile` when `storagePath` was never saved but `pdfUrl` points at our media.
+ */
+export function catalogueStoragePathForDeletion(row) {
+  const direct = String(row?.storagePath || '').trim()
+  if (direct) return direct
+
+  const pdfUrl = String(row?.pdfUrl || '').trim()
+  if (!pdfUrl) return ''
+
+  const b2Key = extractB2ObjectKey(pdfUrl)
+  if (b2Key && b2Key.startsWith('catalogue/')) return b2Key
+
+  const supabaseBase = String(import.meta.env.VITE_SUPABASE_URL || '')
+    .trim()
+    .replace(/\/$/, '')
+  if (!supabaseBase) return ''
+
+  try {
+    const u = new URL(pdfUrl)
+    const host = new URL(supabaseBase).hostname
+    if (u.hostname !== host) return ''
+    const marker = '/storage/v1/object/public/media/'
+    const i = u.pathname.indexOf(marker)
+    if (i === -1) return ''
+    const path = decodeURIComponent(u.pathname.slice(i + marker.length).replace(/^\/+/, ''))
+    if (path.startsWith('catalogue/')) return path
+  } catch {
+    return ''
+  }
+  return ''
+}
 
 export function newCatalogueItemId() {
   return `cat_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`

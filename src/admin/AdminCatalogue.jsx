@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Plus, Trash2, Upload } from 'lucide-react'
 import { supabase } from '../supabase/client'
-import { canUseAdminStorage, uploadAdminFile } from '../utils/mediaStorage'
+import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import { mirrorContactToNavbarFooter } from '../utils/siteContact'
 import {
+  catalogueStoragePathForDeletion,
+  getCatalogueItems,
   newCatalogueItemId,
   openCataloguePdfInNewTabAndDownload,
   storagePathForCatalogueItem,
@@ -78,6 +80,7 @@ function catalogueValidationError(list) {
 export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent }) {
   const [items, setItems] = useState([])
   const [uploadingId, setUploadingId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
   const [pendingUploadRowId, setPendingUploadRowId] = useState(null)
   const hiddenFileRef = useRef(null)
   const draftRef = useRef(draft)
@@ -91,9 +94,8 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     itemsRef.current = items
   }, [items])
 
-  const publishedRows = cloneCatalogueRows(draft.catalogueItems).filter(
-    (r) => String(r.brandName || '').trim() && String(r.pdfUrl || '').trim()
-  )
+  // Same rows the storefront uses — drops legacy/junk entries that lack brand + PDF (fixes “Row 1” save errors on prod).
+  const publishedRows = getCatalogueItems(draft)
 
   const publishedBrandKeys = new Set(publishedRows.map((r) => normalizeBrand(r.brandName)).filter(Boolean))
 
@@ -114,12 +116,51 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     return dupes
   })()
 
+  const deletePublishedRow = async (row) => {
+    const label = row.brandName || 'this catalogue'
+    const storagePath = catalogueStoragePathForDeletion(row)
+    const hasHostedFile = Boolean(storagePath)
+    const ok = window.confirm(
+      hasHostedFile
+        ? `Remove “${label}” from the website and delete the uploaded PDF from storage?`
+        : `Remove “${label}” from the website? (External URL only — no file in your bucket.)`
+    )
+    if (!ok) return
+
+    setDeletingId(row.id)
+    try {
+      if (hasHostedFile && canUseAdminStorage()) {
+        try {
+          await deleteAdminFile(storagePath)
+        } catch (e) {
+          console.warn(e)
+          toast.error(
+            'Could not delete the file from storage. Removing the link from the site anyway — you can clean the file in storage manually.'
+          )
+        }
+      }
+      const published = Array.isArray(draftRef.current.catalogueItems) ? draftRef.current.catalogueItems : []
+      const nextItems = published.filter((x) => String(x.id) !== String(row.id))
+      const base = draftRef.current
+      const nextDraft = { ...base, catalogueItems: nextItems }
+      const synced = syncLegacyCatalogueFromItems(mirrorContactToNavbarFooter(nextDraft))
+      setDraft(synced)
+      await saveContent(mergeSiteContent(synced))
+      toast.success('Catalogue removed from site')
+    } catch (err) {
+      logAdminError('delete catalogue row', err)
+      toast.error(getAdminErrorMessage('remove catalogue'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const persist = async () => {
     if (items.length === 0) {
       toast.error('Add at least one new row above, then save.')
       return
     }
-    const published = draftRef.current.catalogueItems || []
+    const published = getCatalogueItems(draftRef.current)
     const merged = mergePublishedWithNewRows(published, items).map((row) => ({
       ...row,
       title: String(row.title || '').trim() || String(row.brandName || '').trim(),
@@ -195,11 +236,23 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     ])
   }
 
-  const removeRow = (row) => {
+  const removeRow = async (row) => {
     const ok = window.confirm(
       row.pdfUrl ? `Remove “${row.brandName || 'this brand'}” from the draft?` : 'Remove this row?'
     )
     if (!ok) return
+
+    const path = catalogueStoragePathForDeletion(row)
+    if (path && canUseAdminStorage()) {
+      try {
+        await deleteAdminFile(path)
+      } catch (e) {
+        console.warn(e)
+        toast.error(
+          'Could not delete the uploaded PDF from storage. Row removed from the form — remove the file in storage if needed.'
+        )
+      }
+    }
 
     setItems((list) => list.filter((x) => x.id !== row.id))
     toast('Row removed from draft.', { icon: 'ℹ️' })
@@ -347,7 +400,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                   <strong style={{ fontSize: '15px' }}>New / update draft</strong>
-                  <button type="button" className="btn btn-outline danger-btn" onClick={() => removeRow(row)}>
+                  <button type="button" className="btn btn-outline danger-btn" onClick={() => void removeRow(row)}>
                     <Trash2 size={18} />
                     Remove
                   </button>
@@ -475,8 +528,9 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
         Already on the website (live)
       </h3>
       <p className="admin-muted" style={{ marginTop: 0, marginBottom: '16px', fontSize: '0.9rem' }}>
-        This list comes from saved site content — it is not editable here. Add a row above with the same brand name to
-        replace a PDF or link.
+        This list comes from saved site content. Use <strong>Delete</strong> to remove a brand from the site (uploaded
+        files in your bucket are removed when possible). Add a row above with the same brand name to replace a PDF or
+        link.
       </p>
 
       {publishedRows.length === 0 ? (
@@ -494,33 +548,54 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                 background: 'rgb(var(--light-rgb) / 0.55)',
               }}
             >
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px 16px' }}>
-                <strong>{row.brandName}</strong>
-                <span className="admin-muted" style={{ fontSize: '0.95rem' }}>
-                  Link label: {row.title?.trim() ? row.title : `same as brand (${row.brandName})`}
-                </span>
-              </div>
-              {row.pdfUrl ? (
-                <div style={{ marginTop: '10px' }}>
-                  <a
-                    href={row.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      void openCataloguePdfInNewTabAndDownload(row)
-                    }}
-                  >
-                    Open PDF — {linkLabel(row)}
-                  </a>
-                  {row.fileName ? (
-                    <p className="admin-muted" style={{ marginTop: '6px', marginBottom: 0, fontSize: '13px' }}>
-                      {row.fileName}
-                      {row.updatedAt ? ` · ${new Date(row.updatedAt).toLocaleString()}` : ''}
-                    </p>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'flex-start',
+                  gap: '12px 16px',
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-outline danger-btn"
+                  style={{ flexShrink: 0 }}
+                  disabled={deletingId === row.id || Boolean(saving)}
+                  onClick={() => void deletePublishedRow(row)}
+                >
+                  <Trash2 size={18} />
+                  {deletingId === row.id ? 'Deleting…' : 'Delete'}
+                </button>
+                <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px 16px' }}>
+                    <strong>{row.brandName}</strong>
+                    <span className="admin-muted" style={{ fontSize: '0.95rem' }}>
+                      Link label: {row.title?.trim() ? row.title : `same as brand (${row.brandName})`}
+                    </span>
+                  </div>
+                  {row.pdfUrl ? (
+                    <div style={{ marginTop: '10px' }}>
+                      <a
+                        href={row.pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          void openCataloguePdfInNewTabAndDownload(row)
+                        }}
+                      >
+                        Open PDF — {linkLabel(row)}
+                      </a>
+                      {row.fileName ? (
+                        <p className="admin-muted" style={{ marginTop: '6px', marginBottom: 0, fontSize: '13px' }}>
+                          {row.fileName}
+                          {row.updatedAt ? ` · ${new Date(row.updatedAt).toLocaleString()}` : ''}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
-              ) : null}
+              </div>
             </div>
           ))}
         </div>
