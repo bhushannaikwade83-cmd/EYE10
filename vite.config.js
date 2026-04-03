@@ -61,10 +61,12 @@ export default defineConfig(({ mode }) => {
             }
             const keys = [
               'EMAILJS_PUBLIC_KEY',
+              'EMAILJS_PRIVATE_KEY',
               'EMAILJS_SERVICE_ID',
               'EMAILJS_TEMPLATE_ID',
               'EMAILJS_SUBJECT_PREFIX',
               'VITE_EMAILJS_PUBLIC_KEY',
+              'VITE_EMAILJS_PRIVATE_KEY',
               'VITE_EMAILJS_SERVICE_ID',
               'VITE_EMAILJS_TEMPLATE_ID',
               'VITE_EMAILJS_SUBJECT_PREFIX',

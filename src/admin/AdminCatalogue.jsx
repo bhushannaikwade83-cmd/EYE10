@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Upload } from 'lucide-react'
 import { supabase } from '../supabase/client'
-import { canUseAdminStorage, deleteAdminFile, uploadAdminFile } from '../utils/mediaStorage'
+import { canUseAdminStorage, uploadAdminFile } from '../utils/mediaStorage'
 import { mergeSiteContent } from '../content/defaultSiteContent'
 import { mirrorContactToNavbarFooter } from '../utils/siteContact'
 import {
@@ -15,12 +15,39 @@ import { getAdminErrorMessage, logAdminError } from './adminErrorHandling'
 
 const MAX_PDF_BYTES = 24 * 1024 * 1024
 
+function catalogueValidationError(items) {
+  const list = Array.isArray(items) ? items : []
+  for (let i = 0; i < list.length; i++) {
+    const row = list[i]
+    const brand = String(row?.brandName || '').trim()
+    const title = String(row?.title || '').trim()
+    const pdf = String(row?.pdfUrl || '').trim()
+    if (!brand) {
+      return `Row ${i + 1}: Brand name is required.`
+    }
+    if (!title) {
+      return `Row ${i + 1}: Link label is required.`
+    }
+    if (!pdf) {
+      return `Row ${i + 1}: Upload a PDF or paste a public URL.`
+    }
+  }
+  return null
+}
+
 export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent }) {
   const [uploadingId, setUploadingId] = useState(null)
+  const [pendingUploadRowId, setPendingUploadRowId] = useState(null)
+  const hiddenFileRef = useRef(null)
 
   const items = Array.isArray(draft.catalogueItems) ? draft.catalogueItems : []
 
   const persist = async (nextDraft) => {
+    const errMsg = catalogueValidationError(nextDraft.catalogueItems)
+    if (errMsg) {
+      toast.error(errMsg)
+      return
+    }
     setSaving(true)
     try {
       const synced = syncLegacyCatalogueFromItems(mirrorContactToNavbarFooter(nextDraft))
@@ -63,30 +90,24 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     }))
   }
 
-  const removeRow = async (row) => {
+  const removeRow = (row) => {
     const ok = window.confirm(
-      row.pdfUrl ? `Remove “${row.brandName || 'this brand'}” and its PDF from the site?` : 'Remove this row?'
+      row.pdfUrl ? `Remove “${row.brandName || 'this brand'}” from the list?` : 'Remove this row?'
     )
     if (!ok) return
 
-    if (row.storagePath && canUseAdminStorage()) {
-      try {
-        await deleteAdminFile(row.storagePath)
-      } catch (e) {
-        console.warn(e)
-      }
-    }
-
-    const nextItems = items.filter((x) => x.id !== row.id)
-    const nextDraft = { ...draft, catalogueItems: nextItems }
-    setDraft(nextDraft)
-    await persist(nextDraft)
+    setDraft((prev) => {
+      const list = Array.isArray(prev.catalogueItems) ? prev.catalogueItems.filter((x) => x.id !== row.id) : []
+      return { ...prev, catalogueItems: list }
+    })
+    toast('Row removed from draft. Click Save catalogue list to publish.', { icon: 'ℹ️' })
   }
 
-  const handleUpload = async (e, row) => {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
+  const runUploadForRow = async (file, row) => {
+    if (!supabase) {
+      toast.error('Sign in is not available.')
+      return
+    }
     const { data: { session } = {} } = await supabase.auth.getSession()
     if (!canUseAdminStorage() || !session?.user) {
       toast.error('Please sign in and ensure media service is available.')
@@ -104,6 +125,10 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       toast.error('Enter a brand name before uploading.')
       return
     }
+    if (!String(row.title || '').trim()) {
+      toast.error('Enter a link label before uploading.')
+      return
+    }
 
     const storagePath = storagePathForCatalogueItem(row.id)
     setUploadingId(row.id)
@@ -114,21 +139,20 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
         contentType: 'application/pdf',
       })
       const updatedAt = new Date().toISOString()
-      const list = items.map((x) =>
-        x.id === row.id
-          ? {
-              ...x,
-              pdfUrl: url,
-              storagePath,
-              fileName: file.name,
-              updatedAt,
-            }
-          : x
-      )
-      const nextDraft = { ...draft, catalogueItems: list }
-      setDraft(nextDraft)
-      await persist(nextDraft)
-      toast.success('PDF uploaded')
+      setDraft((prev) => {
+        const list = Array.isArray(prev.catalogueItems) ? [...prev.catalogueItems] : []
+        const idx = list.findIndex((x) => x.id === row.id)
+        if (idx < 0) return prev
+        list[idx] = {
+          ...list[idx],
+          pdfUrl: url,
+          storagePath,
+          fileName: file.name,
+          updatedAt,
+        }
+        return { ...prev, catalogueItems: list }
+      })
+      toast.success('PDF attached. Click “Save catalogue list” to publish.')
     } catch (err) {
       logAdminError('upload catalogue PDF', err, { storagePath })
       toast.error(
@@ -141,18 +165,52 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
     }
   }
 
-  const handleSaveMeta = async () => {
-    await persist(draft)
+  const triggerFilePick = (rowId) => {
+    if (!canUseAdminStorage()) {
+      toast.error('Media storage is not available in this environment.')
+      return
+    }
+    setPendingUploadRowId(rowId)
+    requestAnimationFrame(() => {
+      hiddenFileRef.current?.click()
+    })
+  }
+
+  const handleHiddenFileChange = (e) => {
+    const file = e.target.files?.[0]
+    const rowId = pendingUploadRowId
+    e.target.value = ''
+    setPendingUploadRowId(null)
+    if (!file || !rowId) return
+    const row = items.find((x) => x.id === rowId)
+    if (row) void runUploadForRow(file, row)
+  }
+
+  const handleSaveMeta = () => {
+    void persist(draft)
   }
 
   const linkLabel = (row) => (row.title || '').trim() || row.brandName || 'Download'
 
+  const storageReady = canUseAdminStorage()
+
   return (
     <div className="card admin-card">
+      <input
+        ref={hiddenFileRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        className="admin-catalogue-file-input-hidden"
+        aria-hidden
+        tabIndex={-1}
+        onChange={(e) => void handleHiddenFileChange(e)}
+      />
+
       <h2>Product catalogues (PDF by brand)</h2>
       <p className="admin-muted">
         Add one row per brand. Shoppers see each link on Brands, Products, and the footer. Files upload to{' '}
-        <code>catalogue/brands/…</code> (max 25 MB).
+        <code>catalogue/brands/…</code> (max 25 MB). All fields are required; nothing is saved until you click{' '}
+        <strong>Save catalogue list</strong>.
       </p>
 
       <div className="admin-actions-row" style={{ marginTop: '12px' }}>
@@ -160,7 +218,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
           <Plus size={18} />
           Add brand PDF
         </button>
-        <button type="button" className="btn btn-outline" disabled={saving} onClick={() => void handleSaveMeta()}>
+        <button type="button" className="btn btn-outline" disabled={saving} onClick={handleSaveMeta}>
           {saving ? 'Saving…' : 'Save catalogue list'}
         </button>
       </div>
@@ -185,7 +243,7 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
                 <strong style={{ fontSize: '15px' }}>Brand catalogue</strong>
-                <button type="button" className="btn btn-outline danger-btn" onClick={() => void removeRow(row)}>
+                <button type="button" className="btn btn-outline danger-btn" onClick={() => removeRow(row)}>
                   <Trash2 size={18} />
                   Remove
                 </button>
@@ -199,37 +257,52 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                   value={row.brandName || ''}
                   onChange={(e) => updateItem(row.id, { brandName: e.target.value })}
                   placeholder="e.g. Ray-Ban, Oakley"
+                  required
+                  autoComplete="off"
                 />
               </label>
 
               <label className="admin-label" style={{ marginTop: '10px', display: 'block' }}>
-                Link label (optional)
+                Link label *
                 <input
                   className="input"
                   style={{ width: '100%', marginTop: '6px' }}
                   value={row.title || ''}
                   onChange={(e) => updateItem(row.id, { title: e.target.value })}
-                  placeholder="Shown on site; defaults to brand name"
+                  placeholder="Text shown for the download link"
+                  required
+                  autoComplete="off"
                 />
               </label>
 
-              <div style={{ marginTop: '12px' }}>
-                <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>Upload PDF</span>
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  disabled={uploadingId === row.id || !canUseAdminStorage()}
-                  onChange={(e) => void handleUpload(e, row)}
-                />
+              <div className="admin-catalogue-upload-row" style={{ marginTop: '12px' }}>
+                <span style={{ fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+                  PDF (upload or link below) *
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  disabled={uploadingId === row.id || !storageReady}
+                  onClick={() => triggerFilePick(row.id)}
+                >
+                  <Upload size={18} />
+                  {uploadingId === row.id ? 'Uploading…' : 'Choose PDF to upload'}
+                </button>
                 <p className="admin-muted" style={{ marginTop: '10px', marginBottom: 0 }}>
-                  {uploadingId === row.id ? 'Uploading…' : `Path: ${storagePathForCatalogueItem(row.id)}`}
+                  Storage path: <code>{storagePathForCatalogueItem(row.id)}</code>
                 </p>
+                {!storageReady ? (
+                  <p className="admin-muted" style={{ marginTop: '6px', marginBottom: 0, fontSize: '13px' }}>
+                    Sign in and configure storage (Supabase or B2) to enable uploads.
+                  </p>
+                ) : null}
               </div>
 
               <label className="admin-label" style={{ marginTop: '12px', display: 'block' }}>
-                Or paste public PDF URL
+                Public PDF URL (if not uploading)
                 <input
                   className="input"
+                  type="url"
                   style={{ width: '100%', marginTop: '6px' }}
                   value={row.pdfUrl || ''}
                   onChange={(e) => {
@@ -243,10 +316,11 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                     })
                   }}
                   placeholder="https://…"
+                  autoComplete="off"
                 />
               </label>
               <p className="admin-muted" style={{ marginTop: '6px', marginBottom: 0, fontSize: '12px' }}>
-                Pasting a URL clears the storage file reference for this row.
+                Pasting a URL clears the uploaded file reference for this row. You still must click Save to publish.
               </p>
 
               {row.pdfUrl ? (

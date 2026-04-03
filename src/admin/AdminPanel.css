@@ -106,6 +106,43 @@
   font-size: 15px;
 }
 
+/* Stable cursors — avoid I-beam/pointer flicker over the card */
+.admin-catalogue-card {
+  cursor: default;
+}
+
+.admin-catalogue-card .input,
+.admin-catalogue-card input[type='text'],
+.admin-catalogue-card input[type='url'] {
+  cursor: text;
+}
+
+.admin-catalogue-card .btn {
+  cursor: pointer;
+}
+
+.admin-catalogue-card a {
+  cursor: pointer;
+}
+
+.admin-catalogue-file-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-catalogue-upload-row {
+  position: relative;
+}
+
 .admin-muted {
   color: var(--gray-dark);
   font-size: 0.95rem;
