@@ -59,7 +59,6 @@ function catalogueValidationError(list) {
     const row = items[i]
     const brand = String(row?.brandName || '').trim()
     const brandKey = normalizeBrand(brand)
-    const title = String(row?.title || '').trim()
     const pdf = String(row?.pdfUrl || '').trim()
     if (!brand) {
       return `Row ${i + 1}: Brand name is required.`
@@ -68,9 +67,7 @@ function catalogueValidationError(list) {
       return `Row ${i + 1}: Brand "${brand}" is already added. Use each brand only once.`
     }
     seen.add(brandKey)
-    if (!title) {
-      return `Row ${i + 1}: Link label is required.`
-    }
+    // Link label optional when saving: storefront uses title || brandName; we backfill title on save.
     if (!pdf) {
       return `Row ${i + 1}: Upload a PDF or paste a public URL.`
     }
@@ -123,7 +120,10 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       return
     }
     const published = draftRef.current.catalogueItems || []
-    const merged = mergePublishedWithNewRows(published, items)
+    const merged = mergePublishedWithNewRows(published, items).map((row) => ({
+      ...row,
+      title: String(row.title || '').trim() || String(row.brandName || '').trim(),
+    }))
     const errMsg = catalogueValidationError(merged)
     if (errMsg) {
       toast.error(errMsg)
@@ -227,11 +227,6 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       toast.error('Enter a brand name before uploading.')
       return
     }
-    if (!String(row.title || '').trim()) {
-      toast.error('Enter a link label before uploading.')
-      return
-    }
-
     const storagePath = storagePathForCatalogueItem(row.id)
     setUploadingId(row.id)
     try {
@@ -382,14 +377,13 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
                 </label>
 
                 <label className="admin-label" style={{ marginTop: '10px', display: 'block' }}>
-                  Link label *
+                  Link label (optional — uses brand name if empty)
                   <input
                     className="input"
                     style={{ width: '100%', marginTop: '6px' }}
                     value={row.title || ''}
                     onChange={(e) => updateItem(row.id, { title: e.target.value })}
-                    placeholder="Text shown for the download link"
-                    required
+                    placeholder="Shown on site; leave empty to use brand name"
                     autoComplete="off"
                   />
                 </label>
@@ -502,15 +496,9 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
             >
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '8px 16px' }}>
                 <strong>{row.brandName}</strong>
-                {row.title ? (
-                  <span className="admin-muted" style={{ fontSize: '0.95rem' }}>
-                    Link label: {row.title}
-                  </span>
-                ) : (
-                  <span className="admin-muted" style={{ fontSize: '0.95rem' }}>
-                    (no link label in data)
-                  </span>
-                )}
+                <span className="admin-muted" style={{ fontSize: '0.95rem' }}>
+                  Link label: {row.title?.trim() ? row.title : `same as brand (${row.brandName})`}
+                </span>
               </div>
               {row.pdfUrl ? (
                 <div style={{ marginTop: '10px' }}>
