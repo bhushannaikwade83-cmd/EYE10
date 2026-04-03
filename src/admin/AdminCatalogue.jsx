@@ -104,8 +104,9 @@ export function AdminCatalogue({ draft, setDraft, saving, setSaving, saveContent
       const synced = syncLegacyCatalogueFromItems(mirrorContactToNavbarFooter(nextDraft))
       setDraft(synced)
       await saveContent(mergeSiteContent(synced))
-      setItems(cloneCatalogueRows(synced.catalogueItems))
-      toast.success('Catalogue saved')
+      // Clear local rows so the tab stays “blank add flow”; use “Load from website” to see live data.
+      setItems([])
+      toast.success('Catalogue saved. Form cleared — use Load from website to review what is live.')
     } catch (err) {
       logAdminError('save catalogue', err)
       toast.error(getAdminErrorMessage('save catalogue'))
