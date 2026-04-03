@@ -1,4 +1,4 @@
-import { resolveB2MediaUrl } from './b2PrivateUrls'
+import { buildB2DownloadProxyUrl, resolveB2MediaUrl } from './b2PrivateUrls'
 
 /** PDF catalogues with per–brand labels (site content). */
 
@@ -84,18 +84,15 @@ export async function openCataloguePdfInNewTabAndDownload(item) {
   if (openedTab) openedTab.location.href = url
   else window.open(url, '_blank')
   try {
-    const res = await fetch(url, { mode: 'cors' })
-    if (!res.ok) return
-    const blob = await res.blob()
-    const blobUrl = URL.createObjectURL(blob)
+    const dlUrl = buildB2DownloadProxyUrl(raw, { download: true, filename: name }) || url
     const a = document.createElement('a')
-    a.href = blobUrl
+    a.href = dlUrl
     a.download = name
     a.rel = 'noopener'
+    a.style.display = 'none'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
-    URL.revokeObjectURL(blobUrl)
   } catch {
     // Public Storage URLs sometimes omit CORS for fetch; viewing in the new tab is enough.
   }

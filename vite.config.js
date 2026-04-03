@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
             }
 
             res.setHeader('Access-Control-Allow-Origin', '*')
-            res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, POST, OPTIONS')
+            res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
             res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
             if (req.method === 'OPTIONS') {
@@ -47,26 +47,30 @@ export default defineConfig(({ mode }) => {
               return
             }
 
-            if (req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'POST') {
+            if (req.method !== 'POST') {
               res.statusCode = 405
               res.setHeader('Content-Type', 'application/json')
               res.end(JSON.stringify({ error: 'Method not allowed' }))
               return
             }
 
-            const env = loadEnv(mode, process.cwd(), '')
+            // Merge VITE_* (includes VITE_EMAILJS_*) with EMAILJS_* from all .env* files — avoid loadEnv(..., '').
+            const env = {
+              ...loadEnv(mode, process.cwd(), 'VITE_'),
+              ...loadEnv(mode, process.cwd(), 'EMAILJS_'),
+            }
             const keys = [
-              'BREVO_API_KEY',
-              'BREVO_SENDER_EMAIL',
-              'BREVO_SENDER_NAME',
-              'BREVO_SUBJECT_PREFIX',
-              'VITE_BREVO_API_KEY',
-              'VITE_BREVO_SENDER_EMAIL',
-              'VITE_BREVO_SENDER_NAME',
-              'VITE_BREVO_SUBJECT_PREFIX',
+              'EMAILJS_PUBLIC_KEY',
+              'EMAILJS_SERVICE_ID',
+              'EMAILJS_TEMPLATE_ID',
+              'EMAILJS_SUBJECT_PREFIX',
+              'VITE_EMAILJS_PUBLIC_KEY',
+              'VITE_EMAILJS_SERVICE_ID',
+              'VITE_EMAILJS_TEMPLATE_ID',
+              'VITE_EMAILJS_SUBJECT_PREFIX',
             ]
             for (const k of keys) {
-              if (env[k] != null && env[k] !== '') process.env[k] = env[k]
+              process.env[k] = resolveServerEnvValue(env, k)
             }
 
             const chunks = []

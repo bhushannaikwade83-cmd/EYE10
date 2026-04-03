@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './IntroReveal.css'
-import logo from '../assets/eye10-logo.svg'
+import logoImage from '../assets/eye10-logo.png'
 
 export default function IntroReveal({ enabled }) {
   const [visible, setVisible] = useState(false)
@@ -32,8 +32,9 @@ export default function IntroReveal({ enabled }) {
   useEffect(() => {
     if (!visible) return
 
+    /** Any vertical scroll (down or up) dismisses — matches “scroll to continue”. */
     const onWheel = (e) => {
-      if (e.deltaY < -8) dismiss()
+      if (Math.abs(e.deltaY) >= 4 || Math.abs(e.deltaX) >= 4) dismiss()
     }
 
     const onTouchStart = (e) => {
@@ -44,12 +45,22 @@ export default function IntroReveal({ enabled }) {
       const start = touchStartY.current
       const now = e.touches?.[0]?.clientY ?? null
       if (start == null || now == null) return
-      const delta = now - start
-      if (delta > 26) dismiss()
+      if (Math.abs(now - start) > 24) dismiss()
     }
 
     const onKeyDown = (e) => {
-      if (e.key === 'ArrowUp' || e.key === 'PageUp') dismiss()
+      if (
+        e.key === 'ArrowDown' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'PageDown' ||
+        e.key === 'PageUp' ||
+        e.key === ' ' ||
+        e.key === 'Escape' ||
+        e.key === 'Enter'
+      ) {
+        if (e.key === ' ') e.preventDefault()
+        dismiss()
+      }
     }
 
     window.addEventListener('wheel', onWheel, { passive: true })
@@ -71,12 +82,10 @@ export default function IntroReveal({ enabled }) {
     <div className={`intro-reveal ${leaving ? 'is-leaving' : ''}`} aria-live="polite">
       <div className="intro-bg" />
       <div className="intro-content">
-        <div className="intro-logo-stack" aria-hidden="true">
-          <img src={logo} alt="" className="intro-logo-layer layer-back" />
-          <img src={logo} alt="" className="intro-logo-layer layer-mid" />
-          <img src={logo} alt="" className="intro-logo-layer layer-front" />
+        <div className="intro-logo-wrap" aria-hidden="true">
+          <img src={logoImage} alt="" className="intro-logo-img" />
         </div>
-        <p className="intro-copy">Scroll up to open website</p>
+        <p className="intro-copy">Scroll to continue</p>
         <button type="button" className="intro-skip" onClick={dismiss}>
           Skip intro
         </button>

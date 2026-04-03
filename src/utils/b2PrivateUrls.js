@@ -67,7 +67,27 @@ export async function resolveB2MediaUrl(stored) {
   const base = String(import.meta.env.VITE_B2_API_BASE_URL || '')
     .trim()
     .replace(/\/$/, '')
-  const proxyUrl = `${base ? `${base}/api/b2-storage` : '/api/b2-storage'}?action=downloadFile&key=${encodeURIComponent(objectKey)}`
+  const proxyUrl = `${base ? `${base}/api/b2-storage` : '/api/b2-storage'}?action=downloadFile&key=${encodeURIComponent(
+    objectKey
+  )}`
   cache.set(objectKey, { url: proxyUrl, expiresAt: now + CACHE_MS })
   return proxyUrl
+}
+
+export function buildB2DownloadProxyUrl(stored, opts = {}) {
+  const s = String(stored || '').trim()
+  if (!s || !isB2PrivateBucketMode()) return s
+  const objectKey = extractB2ObjectKey(s)
+  if (!objectKey) return s
+
+  const base = String(import.meta.env.VITE_B2_API_BASE_URL || '')
+    .trim()
+    .replace(/\/$/, '')
+  const params = new URLSearchParams({
+    action: 'downloadFile',
+    key: objectKey,
+  })
+  if (opts.download) params.set('download', '1')
+  if (opts.filename) params.set('filename', String(opts.filename))
+  return `${base ? `${base}/api/b2-storage` : '/api/b2-storage'}?${params.toString()}`
 }

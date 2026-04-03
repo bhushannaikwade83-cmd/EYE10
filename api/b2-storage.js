@@ -96,6 +96,14 @@ function normalizeKey(key) {
   return k
 }
 
+function safeDownloadFilename(name, fallback = 'catalogue.pdf') {
+  const raw = String(name || '').trim()
+  if (!raw) return fallback
+  const cleaned = raw.replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, ' ').trim()
+  if (!cleaned) return fallback
+  return cleaned.toLowerCase().endsWith('.pdf') ? cleaned : `${cleaned}.pdf`
+}
+
 function isAllowedPrefix(key) {
   return (
     key.startsWith('catalogue/') ||
@@ -199,6 +207,8 @@ export default async function handler(req, res) {
     if (action === 'downloadFile') {
       try {
         const key = normalizeKey(query.key)
+        const forceDownload = String(query.download || '').trim() === '1'
+        const requestedFileName = safeDownloadFilename(query.filename, key.split('/').pop() || 'catalogue.pdf')
         if (!key || !isAllowedPrefix(key)) {
           res.status(400).json({ error: 'Invalid key' })
           return
@@ -225,7 +235,11 @@ export default async function handler(req, res) {
         const cd = upstream.headers.get('content-disposition')
         const cl = upstream.headers.get('content-length')
         res.setHeader('Content-Type', ct)
-        if (cd) res.setHeader('Content-Disposition', cd)
+        if (forceDownload) {
+          res.setHeader('Content-Disposition', `attachment; filename="${requestedFileName}"`)
+        } else if (cd) {
+          res.setHeader('Content-Disposition', cd)
+        }
         if (cl) res.setHeader('Content-Length', cl)
         if (req.method === 'HEAD') {
           res.status(200).end()

@@ -29,3 +29,6 @@ Thumbs.db
 
 # Optional
 *.local
+
+# Supabase CLI cache
+supabase/.temp/

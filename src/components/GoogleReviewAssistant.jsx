@@ -32,12 +32,17 @@ function GoogleReviewAssistant() {
 
   const nameRef = useRef('')
   const emailRef = useRef('')
+  const emailInputRef = useRef(null)
   useEffect(() => {
     nameRef.current = name
   }, [name])
   useEffect(() => {
     emailRef.current = email
   }, [email])
+
+  /** DOM value first — browser autofill can fill the field before React state/refs update. */
+  const getEmailForCoupon = () =>
+    String(emailInputRef.current?.value ?? emailRef.current ?? '').trim()
 
   const couponOptions = useMemo(
     () => [
@@ -136,12 +141,16 @@ function GoogleReviewAssistant() {
   }
 
   const trySendCouponEmail = async (code, offer, validity = {}) => {
+    if (!getEmailForCoupon()) {
+      toast.error('Enter a valid email above before spinning.')
+      return
+    }
     const couponMeta = getCouponByCode(code)
     const validFrom = validity.validFrom || couponMeta?.issuedAt
     const validTill = validity.validTill || couponMeta?.expiresAt
     const result = await sendCouponEmail({
       customerName: nameRef.current.trim() || 'Customer',
-      customerEmail: emailRef.current,
+      customerEmail: getEmailForCoupon(),
       couponCode: code,
       offerLabel: offer,
       validFrom,
@@ -270,6 +279,7 @@ function GoogleReviewAssistant() {
           <div className="review-row">
             <label htmlFor="review-email">Email (for coupon)</label>
             <input
+              ref={emailInputRef}
               id="review-email"
               type="email"
               className="input"
