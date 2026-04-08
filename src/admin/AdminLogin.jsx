@@ -114,6 +114,7 @@ function AdminLogin() {
       title="Admin login"
       subtitle="Secure sign-in for authorized administrators."
       rightSlot={null}
+      showNavigation={false}
     >
       <div className="admin-login">
         <div className="admin-login-card card">

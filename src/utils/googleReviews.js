@@ -91,6 +91,8 @@ export const normalizePhoneNumber = (input) => {
   return digits
 }
 
+const normalizeEmail = (input) => String(input || '').trim().toLowerCase()
+
 const buildCouponCode = (couponValue, name, phone) => {
   const safeName = (name.trim() || 'CUSTOMER')
     .replace(/[^a-zA-Z0-9]/g, '')
@@ -101,14 +103,20 @@ const buildCouponCode = (couponValue, name, phone) => {
   return `EYE${couponValue}${safeName}${phoneTail}${token}`
 }
 
-export const issueCouponForReview = ({ name, phone, couponLabel, couponValue }) => {
+export const issueCouponForReview = ({ name, phone, email, couponLabel, couponValue }) => {
   const normalizedPhone = normalizePhoneNumber(phone)
-  if (normalizedPhone.length !== 10) {
-    return { ok: false, reason: 'invalid-phone' }
+  const normalizedEmail = normalizeEmail(email)
+  if (normalizedPhone.length !== 10 && !normalizedEmail) {
+    return { ok: false, reason: 'missing-identity' }
   }
 
   const existing = getWebsiteCoupons()
-  const alreadyIssued = existing.find((coupon) => coupon.phone === normalizedPhone)
+  const alreadyIssued = existing.find((coupon) => {
+    const couponPhone = normalizePhoneNumber(coupon?.phone)
+    const couponEmail = normalizeEmail(coupon?.email)
+    if (normalizedPhone.length === 10) return couponPhone === normalizedPhone
+    return normalizedEmail && couponEmail === normalizedEmail
+  })
   if (alreadyIssued) {
     return { ok: false, reason: 'already-issued', coupon: alreadyIssued }
   }
@@ -118,7 +126,8 @@ export const issueCouponForReview = ({ name, phone, couponLabel, couponValue }) 
   const coupon = {
     id: Date.now(),
     name: name.trim() || 'Customer',
-    phone: normalizedPhone,
+    phone: normalizedPhone.length === 10 ? normalizedPhone : '',
+    email: normalizedEmail || '',
     code: buildCouponCode(couponValue, name, normalizedPhone),
     offerLabel: couponLabel,
     offerValue: couponValue,

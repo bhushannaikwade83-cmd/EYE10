@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import './IntroReveal.css'
 import logoImage from '../assets/eye10-logo.png'
 
+const INTRO_SEEN_KEY = 'eye10_intro_seen'
+
 export default function IntroReveal({ enabled }) {
   const [visible, setVisible] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -12,11 +14,28 @@ export default function IntroReveal({ enabled }) {
     window.setTimeout(() => {
       setVisible(false)
       document.body.classList.remove('intro-lock')
+      try {
+        window.localStorage.setItem(INTRO_SEEN_KEY, '1')
+      } catch {
+        // Ignore storage write errors (private mode, quota, etc).
+      }
     }, 850)
   }, [leaving])
 
   useEffect(() => {
     if (enabled) {
+      let alreadySeen = false
+      try {
+        alreadySeen = window.localStorage.getItem(INTRO_SEEN_KEY) === '1'
+      } catch {
+        alreadySeen = false
+      }
+      if (alreadySeen) {
+        setVisible(false)
+        setLeaving(false)
+        document.body.classList.remove('intro-lock')
+        return
+      }
       setVisible(true)
       document.body.classList.add('intro-lock')
     } else {

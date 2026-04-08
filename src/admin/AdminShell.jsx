@@ -18,7 +18,7 @@ import {
 import { adminTabPath, getAdminTabFromLocation } from './adminTabs'
 import './AdminShell.css'
 
-export function AdminShell({ title, subtitle, rightSlot, children }) {
+export function AdminShell({ title, subtitle, rightSlot, children, showNavigation = true }) {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -86,16 +86,20 @@ export function AdminShell({ title, subtitle, rightSlot, children }) {
   )
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell ${showNavigation ? '' : 'admin-shell--no-nav'}`}>
       <header className="admin-shell__topbar">
-        <button
-          type="button"
-          className="admin-shell__iconbtn admin-shell__menu"
-          aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-          onClick={() => setMobileOpen((v) => !v)}
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        {showNavigation ? (
+          <button
+            type="button"
+            className="admin-shell__iconbtn admin-shell__menu"
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            onClick={() => setMobileOpen((v) => !v)}
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        ) : (
+          <span className="admin-shell__menu" aria-hidden />
+        )}
 
         <div className="admin-shell__title">
           <h1>{title}</h1>
@@ -106,9 +110,9 @@ export function AdminShell({ title, subtitle, rightSlot, children }) {
       </header>
 
       <div className="admin-shell__body">
-        <aside className="admin-shell__sidebar">{navList}</aside>
+        {showNavigation ? <aside className="admin-shell__sidebar">{navList}</aside> : null}
 
-        {mobileOpen ? (
+        {showNavigation && mobileOpen ? (
           <div className="admin-shell__backdrop" onClick={() => setMobileOpen(false)}>
             <div className="admin-shell__drawer" onClick={(e) => e.stopPropagation()}>
               {navList}

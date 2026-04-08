@@ -23,7 +23,7 @@ function Contact() {
   const addressMapsUrl = getStoreGoogleMapsUrl(content)
   const telHref = `tel:${displayPhone.replace(/\s+/g, '')}`
   const mailHref = `mailto:${displayEmail}`
-  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content))
 
   const [formData, setFormData] = useState({
     name: '',

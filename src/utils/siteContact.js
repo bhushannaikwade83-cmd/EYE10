@@ -43,7 +43,15 @@ export function getStoreGoogleMapsUrl(content) {
 
 export function getSiteWhatsAppDigits(content) {
   const c = content || {}
-  const raw = String(c.contact?.whatsappNumber || defaultSiteContent.contact.whatsappNumber || '')
+  const raw = String(
+    c.contact?.whatsappNumber ||
+      c.contact?.phone ||
+      c.navbar?.phone ||
+      c.footer?.phone ||
+      defaultSiteContent.contact.whatsappNumber ||
+      defaultSiteContent.contact.phone ||
+      ''
+  )
   return raw.replace(/\D/g, '')
 }
 

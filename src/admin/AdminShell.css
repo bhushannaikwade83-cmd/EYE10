@@ -67,6 +67,10 @@
   min-height: calc(100vh - 72px);
 }
 
+.admin-shell--no-nav .admin-shell__body {
+  grid-template-columns: 1fr;
+}
+
 .admin-shell__sidebar {
   border-right: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.72);
@@ -173,6 +177,11 @@
   min-width: 0;
 }
 
+.admin-shell--no-nav .admin-shell__content {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
 .admin-shell__content .card {
   box-shadow: none;
 }
@@ -221,6 +230,10 @@
     padding-left: max(14px, env(safe-area-inset-left, 0px));
     padding-right: max(14px, env(safe-area-inset-right, 0px));
     max-width: 100%;
+  }
+
+  .admin-shell--no-nav .admin-shell__content {
+    max-width: 640px;
   }
 
   .admin-shell__title h1 {

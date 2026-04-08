@@ -36,6 +36,10 @@
   color: var(--dark);
 }
 
+.google-review-form .input {
+  min-height: 46px;
+}
+
 .review-hint {
   margin-top: 8px;
   font-size: 13px;
@@ -141,6 +145,7 @@
 
 /* Scratch card (replaces spin wheel) */
 .coupon-scratch-wrap {
+  width: 100%;
   max-width: 400px;
   margin: 20px auto 8px;
 }
@@ -235,6 +240,8 @@
   cursor: grab;
   touch-action: none;
   z-index: 2;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .coupon-scratch-canvas:active {
@@ -247,6 +254,7 @@
   max-width: 400px;
   margin: 12px auto 0;
   font-size: 0.9rem;
+  min-height: 46px;
 }
 
 .coupon-actions--scratch {
@@ -254,6 +262,48 @@
 }
 
 @media (max-width: 520px) {
+  .google-review-section {
+    padding: 72px 0;
+  }
+
+  .google-review-header {
+    margin-bottom: 18px;
+  }
+
+  .google-review-header h2 {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+
+  .google-review-header p {
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+
+  .google-review-form {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .review-options {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 14px 0;
+  }
+
+  .review-option {
+    align-items: flex-start;
+  }
+
+  .generated-preview {
+    padding: 10px;
+  }
+
+  .generated-preview p {
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
   .coupon-flow-card {
     padding: 16px 14px;
   }
@@ -264,12 +314,21 @@
   }
 
   .coupon-scratch-card {
-    max-height: 200px;
+    max-height: 210px;
     border-radius: 14px;
   }
 
   .coupon-scratch-prize {
     padding: 16px 12px;
+  }
+
+  .coupon-scratch-offer {
+    font-size: 1.1rem;
+  }
+
+  .coupon-scratch-code {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
   }
 }
 

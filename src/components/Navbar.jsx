@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X, Search, Phone } from 'lucide-react'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 import { getSitePhone, getSiteWhatsAppDigits } from '../utils/siteContact'
@@ -12,9 +12,10 @@ function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [scrolled, setScrolled] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { content } = useSiteContent()
   const navbarPhone = getSitePhone(content)
-  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content))
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,21 +47,33 @@ function Navbar() {
   }
 
   const handleAnchorClick = (e, href) => {
-    if (href.startsWith('#')) {
-      e.preventDefault()
-      const element = document.querySelector(href)
-      if (element) {
-        const offset = 100 // Account for fixed navbar
-        const elementPosition = element.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - offset
+    if (!href.startsWith('#')) return
+    e.preventDefault()
+    setMenuOpen(false)
 
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        })
-        setMenuOpen(false)
+    const targetId = href.slice(1)
+    const scrollToTarget = (attempt = 0) => {
+      const element = document.getElementById(targetId)
+      if (!element) {
+        if (attempt < 20) {
+          window.setTimeout(() => scrollToTarget(attempt + 1), 80)
+        }
+        return
       }
+
+      const offset = 100 // account for fixed navbar
+      const elementPosition = element.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - offset
+      window.scrollTo({ top: Math.max(offsetPosition, 0), behavior: 'smooth' })
     }
+
+    if (location.pathname !== '/') {
+      navigate('/')
+      window.setTimeout(() => scrollToTarget(0), 40)
+      return
+    }
+
+    scrollToTarget(0)
   }
 
   return (

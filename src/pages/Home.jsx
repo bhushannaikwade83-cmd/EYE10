@@ -22,7 +22,7 @@ function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const { content } = useSiteContent()
-  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content))
   const featuredIdsKey = (content?.featuredProductIds || []).filter(Boolean).join(',')
   const catalogueItems = getCatalogueItems(content)
   const primaryCatalogue = catalogueItems[0]

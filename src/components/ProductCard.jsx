@@ -13,7 +13,7 @@ import './ProductCard.css'
 function ProductCard({ product }) {
   const [showQuickView, setShowQuickView] = useState(false)
   const { content } = useSiteContent()
-  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content))
 
   // Determine badges
   const badges = []

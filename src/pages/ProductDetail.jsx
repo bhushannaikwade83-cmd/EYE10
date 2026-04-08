@@ -29,7 +29,7 @@ function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [isFavorite, setIsFavorite] = useState(false)
   const { content } = useSiteContent()
-  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content) || content?.contact?.whatsappNumber)
+  const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content))
   const callPhone = getSitePhone(content)
 
   useEffect(() => {
@@ -76,7 +76,7 @@ function ProductDetail() {
     return product.videos.filter(Boolean)
   }, [product])
 
-  const { urls: resolvedImages } = useResolvedMediaUrls(imageList)
+  const { urls: resolvedImages, loading: imagesLoading } = useResolvedMediaUrls(imageList)
   const { urls: resolvedVideos } = useResolvedMediaUrls(videoList)
 
   useEffect(() => {
@@ -107,6 +107,18 @@ function ProductDetail() {
     }
   }
 
+  const displayImages = useMemo(
+    () =>
+      imageList.map((raw, index) => {
+        const resolved = String(resolvedImages[index] || '').trim()
+        if (resolved) return resolved
+        if (imagesLoading) return IMG_PLACEHOLDER
+        const fallback = String(raw || '').trim()
+        return fallback || IMG_PLACEHOLDER
+      }),
+    [imageList, resolvedImages, imagesLoading]
+  )
+
 
   if (loading) {
     return (
@@ -133,11 +145,7 @@ function ProductDetail() {
     )
   }
 
-  const mainImage = imageList[0] || IMG_PLACEHOLDER
-  const zoomSrc =
-    (resolvedImages[selectedImage] || resolvedImages[0] || '') ||
-    imageList[selectedImage] ||
-    mainImage
+  const zoomSrc = displayImages[selectedImage] || displayImages[0] || IMG_PLACEHOLDER
   const featureList = normalizeFeatureList(product)
   const benefitList = normalizeBenefitList(product)
   const rating =
@@ -170,10 +178,10 @@ function ProductDetail() {
               </div>
               {imageList.length > 1 && (
                 <div className="image-thumbnails">
-                  {imageList.map((img, index) => (
+                  {displayImages.map((img, index) => (
                     <img
                       key={index}
-                      src={resolvedImages[index] || img}
+                      src={img || IMG_PLACEHOLDER}
                       alt={`${product.name} ${index + 1}`}
                       className={selectedImage === index ? 'active' : ''}
                       onClick={() => setSelectedImage(index)}

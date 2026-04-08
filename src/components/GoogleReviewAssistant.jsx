@@ -17,13 +17,14 @@ import {
 } from '../utils/sendCouponEmail'
 import './GoogleReviewAssistant.css'
 
-const SCRATCH_BRUSH_PX = 32
-const SCRATCH_REVEAL_RATIO = 0.36
+const SCRATCH_BRUSH_PX = 38
+const SCRATCH_REVEAL_RATIO = 0.26
 
 function CouponScratchCard({ phase, revealed, onRevealed, couponCode, couponValue }) {
   const wrapRef = useRef(null)
   const canvasRef = useRef(null)
   const drawingRef = useRef(false)
+  const lastPointRef = useRef(null)
   const revealedRef = useRef(false)
   const rafRef = useRef(0)
 
@@ -97,7 +98,7 @@ function CouponScratchCard({ phase, revealed, onRevealed, couponCode, couponValu
   }, [measureScratchProgress, onRevealed])
 
   const eraseAt = useCallback(
-    (clientX, clientY) => {
+    (clientX, clientY, fromPoint = null) => {
       const canvas = canvasRef.current
       if (!canvas) return
       const ctx = canvas.getContext('2d')
@@ -107,11 +108,23 @@ function CouponScratchCard({ phase, revealed, onRevealed, couponCode, couponValu
       const scaleY = canvas.height / rect.height
       const sx = (clientX - rect.left) * scaleX
       const sy = (clientY - rect.top) * scaleY
-      const r = (SCRATCH_BRUSH_PX / 2) * Math.max(scaleX, scaleY)
+      const strokeWidth = SCRATCH_BRUSH_PX * Math.max(scaleX, scaleY)
       ctx.globalCompositeOperation = 'destination-out'
-      ctx.beginPath()
-      ctx.arc(sx, sy, r, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      ctx.lineWidth = strokeWidth
+      if (fromPoint) {
+        const fx = (fromPoint.x - rect.left) * scaleX
+        const fy = (fromPoint.y - rect.top) * scaleY
+        ctx.beginPath()
+        ctx.moveTo(fx, fy)
+        ctx.lineTo(sx, sy)
+        ctx.stroke()
+      } else {
+        ctx.beginPath()
+        ctx.arc(sx, sy, strokeWidth / 2, 0, Math.PI * 2)
+        ctx.fill()
+      }
       ctx.globalCompositeOperation = 'source-over'
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       rafRef.current = requestAnimationFrame(() => {
@@ -125,22 +138,47 @@ function CouponScratchCard({ phase, revealed, onRevealed, couponCode, couponValu
   const onPointerDown = (e) => {
     if (phase !== 'done' || revealed) return
     drawingRef.current = true
-    eraseAt(e.clientX, e.clientY)
+    lastPointRef.current = { x: e.clientX, y: e.clientY }
+    eraseAt(e.clientX, e.clientY, null)
     e.currentTarget.setPointerCapture(e.pointerId)
   }
 
   const onPointerMove = (e) => {
     if (!drawingRef.current || phase !== 'done' || revealed) return
-    eraseAt(e.clientX, e.clientY)
+    eraseAt(e.clientX, e.clientY, lastPointRef.current)
+    lastPointRef.current = { x: e.clientX, y: e.clientY }
   }
 
   const onPointerUp = (e) => {
     drawingRef.current = false
+    lastPointRef.current = null
+    maybeCompleteScratch()
     try {
       e.currentTarget.releasePointerCapture(e.pointerId)
     } catch {
       /* ignore */
     }
+  }
+
+  const onTouchStart = (e) => {
+    const t = e.touches?.[0]
+    if (!t || phase !== 'done' || revealed) return
+    drawingRef.current = true
+    lastPointRef.current = { x: t.clientX, y: t.clientY }
+    eraseAt(t.clientX, t.clientY, null)
+  }
+
+  const onTouchMove = (e) => {
+    const t = e.touches?.[0]
+    if (!t || !drawingRef.current || phase !== 'done' || revealed) return
+    eraseAt(t.clientX, t.clientY, lastPointRef.current)
+    lastPointRef.current = { x: t.clientX, y: t.clientY }
+  }
+
+  const onTouchEnd = () => {
+    drawingRef.current = false
+    lastPointRef.current = null
+    maybeCompleteScratch()
   }
 
   useLayoutEffect(() => {
@@ -164,7 +202,7 @@ function CouponScratchCard({ phase, revealed, onRevealed, couponCode, couponValu
         <div className="coupon-scratch-prize" aria-live="polite">
           {phase === 'error' ? (
             <div className="coupon-scratch-prize-inner coupon-scratch-prize-inner--error">
-              We could not issue a coupon. Check your mobile number and try again from Step 1.
+              We could not issue a coupon. Check your details and try again from Step 1.
             </div>
           ) : (
             <div className="coupon-scratch-prize-inner">
@@ -185,6 +223,9 @@ function CouponScratchCard({ phase, revealed, onRevealed, couponCode, couponValu
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           />
         ) : null}
       </div>
@@ -338,6 +379,7 @@ function GoogleReviewAssistant() {
     const result = issueCouponForReview({
       name,
       phone,
+      email: getEmailForCoupon(),
       couponLabel: selectedCoupon.label,
       couponValue: selectedCoupon.value,
     })
@@ -345,23 +387,15 @@ function GoogleReviewAssistant() {
     if (!result.ok && result.reason === 'already-issued' && result.coupon) {
       setCouponValue(result.coupon.offerLabel)
       setCouponCode(result.coupon.code)
-      toast.error('Only one coupon is allowed per mobile number.')
-      void trySendCouponEmail(result.coupon.code, result.coupon.offerLabel, {
-        validFrom: result.coupon.issuedAt,
-        validTill: result.coupon.expiresAt,
-      })
+      toast.error('Only one coupon is allowed per customer.')
       setScratchPhase('done')
     } else if (!result.ok) {
-      toast.error('Unable to issue coupon. Please check your mobile number.')
+      toast.error('Unable to issue coupon. Please check your details.')
       setScratchPhase('error')
     } else {
       setCouponValue(result.coupon.offerLabel)
       setCouponCode(result.coupon.code)
       toast.success(`You won ${selectedCoupon.label}!`)
-      void trySendCouponEmail(result.coupon.code, result.coupon.offerLabel, {
-        validFrom: result.coupon.issuedAt,
-        validTill: result.coupon.expiresAt,
-      })
       setScratchPhase('done')
     }
 
@@ -381,6 +415,14 @@ function GoogleReviewAssistant() {
     setScratchPhase('idle')
     setScratchRevealed(false)
     setScratchKey(0)
+  }
+
+  const handleScratchRevealed = () => {
+    if (scratchRevealed) return
+    setScratchRevealed(true)
+    if (couponCode && couponValue) {
+      void trySendCouponEmail(couponCode, couponValue)
+    }
   }
 
   return (
@@ -404,22 +446,6 @@ function GoogleReviewAssistant() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Optional"
             />
-          </div>
-
-          <div className="review-row">
-            <label htmlFor="review-phone">Mobile number (same as enquiry)</label>
-            <input
-              id="review-phone"
-              className="input"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Filled from Enquire Now, or enter 10-digit number"
-              required
-            />
-            <p className="review-hint">
-              Used to issue one coupon per customer. Same number as <strong>Enquire Now</strong> if
-              possible.
-            </p>
           </div>
 
           <div className="review-row">
@@ -492,7 +518,7 @@ function GoogleReviewAssistant() {
               key={scratchKey}
               phase={scratchPhase}
               revealed={scratchRevealed}
-              onRevealed={() => setScratchRevealed(true)}
+              onRevealed={handleScratchRevealed}
               couponCode={couponCode}
               couponValue={couponValue}
             />
