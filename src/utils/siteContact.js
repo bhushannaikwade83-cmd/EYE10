@@ -43,15 +43,9 @@ export function getStoreGoogleMapsUrl(content) {
 
 export function getSiteWhatsAppDigits(content) {
   const c = content || {}
-  const raw = String(
-    c.contact?.whatsappNumber ||
-      c.contact?.phone ||
-      c.navbar?.phone ||
-      c.footer?.phone ||
-      defaultSiteContent.contact.whatsappNumber ||
-      defaultSiteContent.contact.phone ||
-      ''
-  )
+  // Only use explicitly configured WhatsApp number from Admin.
+  // Do not fall back to phone/defaults to avoid opening wrong chats.
+  const raw = String(c.contact?.whatsappNumber || '')
   return raw.replace(/\D/g, '')
 }
 
