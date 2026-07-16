@@ -12,7 +12,7 @@ export function isCouponEmailConfigured() {
 /**
  * Sends coupon details via our backend API route.
  * Local dev: Vite serves POST /api/send-coupon-email on the same port (see vite.config.js).
- * Production: Vercel serverless api/send-coupon-email.js.
+ * Production: your deployed backend serves /api/send-coupon-email.
  */
 export async function sendCouponEmail({
   customerName,

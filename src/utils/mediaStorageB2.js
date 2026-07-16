@@ -1,4 +1,4 @@
-/** When `VITE_STORAGE_BACKEND=b2`, uploads go to Backblaze B2 via `/api/b2-storage` (Vercel). */
+/** When `VITE_STORAGE_BACKEND=b2`, uploads go to Backblaze B2 via the hosted `/api/b2-storage` endpoint. */
 
 export function isB2StorageBackend() {
   return String(import.meta.env.VITE_STORAGE_BACKEND || '')
@@ -6,7 +6,7 @@ export function isB2StorageBackend() {
     .toLowerCase() === 'b2'
 }
 
-/** Base URL for Vercel `api/b2-storage`. */
+/** Base URL for the hosted `api/b2-storage` endpoint. */
 export function b2StorageApiUrl() {
   const base = String(import.meta.env.VITE_B2_API_BASE_URL || '')
     .trim()
