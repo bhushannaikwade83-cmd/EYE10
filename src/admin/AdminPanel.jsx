@@ -12,7 +12,6 @@ import {
   redeemCoupon,
 } from '../utils/googleReviews'
 import { AdminFeaturedProducts } from './AdminFeaturedProducts'
-import { AdminHomeBanners } from './AdminHomeBanners'
 import { AdminProducts } from './AdminProducts'
 import { AdminDashboard } from './AdminDashboard'
 import { AdminEnquiries } from './AdminEnquiries'
@@ -37,7 +36,6 @@ const TAB_HEADER = {
   social: { title: 'Social links', subtitle: 'Facebook, Instagram, X, and YouTube URLs for the footer.' },
   products: { title: 'Products', subtitle: 'Create, edit, and manage the complete product catalog.' },
   featured: { title: 'Featured products', subtitle: 'Homepage featured grid (up to 8).' },
-  banners: { title: 'Home banners', subtitle: 'Homepage offer slider (images or video).' },
   coupons: { title: 'Coupons', subtitle: 'Google Review campaign coupon verification.' },
 }
 
@@ -189,16 +187,6 @@ function AdminPanel() {
           setDraft={setDraft}
           saveContent={saveContent}
           allProducts={allProducts}
-          saving={saving}
-          setSaving={setSaving}
-        />
-      )}
-
-      {tab === 'banners' && (
-        <AdminHomeBanners
-          draft={draft}
-          setDraft={setDraft}
-          saveContent={saveContent}
           saving={saving}
           setSaving={setSaving}
         />

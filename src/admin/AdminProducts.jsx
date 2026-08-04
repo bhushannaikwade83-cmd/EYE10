@@ -84,9 +84,6 @@ function buildProductPayload(form, override) {
     name: form.name.trim(),
     brand: form.brand.trim(),
     category: form.category.trim(),
-    price: toOptionalNumber(form.price),
-    originalPrice: toOptionalNumber(form.originalPrice),
-    discount: toOptionalNumber(form.discount),
     stock: toOptionalNumber(form.stock) ?? 0,
     isNew: Boolean(form.isNew),
     bestSeller: Boolean(form.bestSeller),
@@ -104,9 +101,6 @@ function buildProductPayload(form, override) {
     frameType: form.frameType || '',
     features,
     benefits,
-
-    rating: toOptionalNumber(form.rating),
-    reviewCount: toOptionalNumber(form.reviewCount),
   }
 
   // Remove undefined numeric fields so we don't write "undefined".
@@ -125,9 +119,6 @@ function emptyForm() {
     name: '',
     brand: '',
     category: '',
-    price: '',
-    originalPrice: '',
-    discount: '',
     stock: '0',
     isNew: false,
     bestSeller: false,
@@ -144,9 +135,6 @@ function emptyForm() {
     frameType: '',
     featuresText: '',
     benefitsText: '',
-
-    rating: '',
-    reviewCount: '',
   }
 }
 
@@ -384,8 +372,6 @@ export function AdminProducts() {
     if (!form.name.trim()) return toast.error('Product name is required.')
     if (!form.brand.trim()) return toast.error('Brand is required.')
     if (!form.category.trim()) return toast.error('Category is required.')
-    if (!String(form.price).trim()) return toast.error('Price is required.')
-    if (!Number.isFinite(Number(form.price))) return toast.error('Price must be a number.')
 
     setSaving(true)
     try {
@@ -735,38 +721,6 @@ export function AdminProducts() {
                   </div>
 
                   <div className="admin-products-grid-3">
-                    <label className="admin-label">
-                      Price
-                      <input
-                        className="input"
-                        value={form.price}
-                        onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
-                        placeholder="e.g. 2999"
-                        inputMode="decimal"
-                      />
-                    </label>
-                    <label className="admin-label">
-                      Original price (optional)
-                      <input
-                        className="input"
-                        value={form.originalPrice}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, originalPrice: e.target.value }))
-                        }
-                        placeholder="e.g. 3999"
-                        inputMode="decimal"
-                      />
-                    </label>
-                    <label className="admin-label">
-                      Discount % (optional)
-                      <input
-                        className="input"
-                        value={form.discount}
-                        onChange={(e) => setForm((prev) => ({ ...prev, discount: e.target.value }))}
-                        placeholder="e.g. 25"
-                        inputMode="decimal"
-                      />
-                    </label>
                   </div>
 
                   <div className="admin-products-form-section">
@@ -856,29 +810,6 @@ export function AdminProducts() {
                   </div>
 
                   <div className="admin-products-grid-3">
-                    <label className="admin-label">
-                      Rating (optional)
-                      <input
-                        className="input"
-                        value={form.rating}
-                        onChange={(e) => setForm((prev) => ({ ...prev, rating: e.target.value }))}
-                        inputMode="decimal"
-                        placeholder="e.g. 4.6"
-                      />
-                    </label>
-                    <label className="admin-label">
-                      Review count (optional)
-                      <input
-                        className="input"
-                        value={form.reviewCount}
-                        onChange={(e) =>
-                          setForm((prev) => ({ ...prev, reviewCount: e.target.value }))
-                        }
-                        inputMode="numeric"
-                        placeholder="e.g. 120"
-                      />
-                    </label>
-                    <div />
                   </div>
 
                   <div className="admin-products-form-section">

@@ -1,13 +1,23 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Search, X, Grid, List, ArrowUpDown, Filter } from 'lucide-react'
 import './ProductFilters.css'
 
 function ProductFilters({ products, onFilterChange, onSortChange, onViewChange, currentView = 'grid' }) {
+  const [searchParams] = useSearchParams()
+  const urlCategory = searchParams.get('category') || 'all'
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory)
   const [priceRange, setPriceRange] = useState('all')
   const [sortBy, setSortBy] = useState('default')
   const [showSortMenu, setShowSortMenu] = useState(false)
+
+  useEffect(() => {
+    if (products.length === 0) return
+    setSelectedCategory(urlCategory)
+    applyFilters(searchTerm, urlCategory, priceRange, sortBy)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlCategory, products])
 
   const categories = useMemo(() => {
     const cats = ['all', ...new Set(products.map(p => p.category).filter(Boolean))]
@@ -145,7 +155,7 @@ function ProductFilters({ products, onFilterChange, onSortChange, onViewChange, 
             <Search className="search-icon" size={20} />
             <input
               type="text"
-              placeholder="Search glasses"
+              placeholder="Search eyewear & watches"
               value={searchTerm}
               onChange={handleSearch}
               className="search-input"

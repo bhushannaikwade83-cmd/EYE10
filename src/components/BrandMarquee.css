@@ -1,0 +1,75 @@
+.brand-marquee {
+  background: var(--dark) !important;
+  padding: 42px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.brand-marquee::before,
+.brand-marquee::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.brand-marquee::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--dark), transparent);
+}
+
+.brand-marquee::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--dark), transparent);
+}
+
+.brand-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 88px;
+  width: max-content;
+  animation: brandMarqueeScroll 32s linear infinite;
+}
+
+.brand-marquee-item {
+  font-family: 'Space Grotesk', 'Montserrat', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--primary-light);
+  white-space: nowrap;
+}
+
+@keyframes brandMarqueeScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-marquee-track {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-marquee {
+    padding: 28px 0;
+  }
+
+  .brand-marquee-item {
+    font-size: 18px;
+    letter-spacing: 2px;
+  }
+
+  .brand-marquee-track {
+    gap: 48px;
+  }
+}

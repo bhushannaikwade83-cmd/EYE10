@@ -4,7 +4,6 @@ import { Menu, X, Search, Phone } from 'lucide-react'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 import { getSitePhone, getSiteWhatsAppDigits } from '../utils/siteContact'
 import { useSiteContent } from '../context/SiteContentContext'
-import logoImage from '../assets/eye10-logo.png'
 import './Navbar.css'
 
 function Navbar() {
@@ -83,13 +82,16 @@ function Navbar() {
       <div className="container">
         <div className="nav-content">
           <Link to="/" className="logo">
-            <img src={logoImage} alt="EYE10" className="logo-image" />
+            <span className="logo-mark">
+              <span className="logo-mark-line1">{content?.brand?.name || 'EYE10'}</span>
+              <span className="logo-mark-line2">Eyewear &amp; Watches</span>
+            </span>
           </Link>
 
           <form onSubmit={handleSearch} className="search-bar">
             <input
               type="text"
-              placeholder="Search glasses"
+              placeholder="Search eyewear & watches"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -144,7 +146,7 @@ function Navbar() {
             <input
               type="search"
               enterKeyHint="search"
-              placeholder="Search glasses"
+              placeholder="Search eyewear & watches"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="mobile-search-input"

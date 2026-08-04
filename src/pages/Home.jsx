@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, FileText } from 'lucide-react'
+import { ArrowRight, FileText, Glasses, Watch, Gift, CreditCard, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import ProductCard from '../components/ProductCard'
-import HomeOffersSlider from '../components/HomeOffersSlider'
+import About from '../components/About'
+import Services from '../components/Services'
 import Brands from '../components/Brands'
+import BrandMarquee from '../components/BrandMarquee'
 import Testimonials from '../components/Testimonials'
 import GoogleReviewAssistant from '../components/GoogleReviewAssistant'
 import RecentlyViewed from '../components/RecentlyViewed'
@@ -16,6 +18,7 @@ import { getSiteWhatsAppDigits } from '../utils/siteContact'
 import { getSampleProducts } from '../utils/sampleProducts'
 import { useSiteContent } from '../context/SiteContentContext'
 import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
+import logoImage from '../assets/eye10-logo.png'
 import './Home.css'
 
 function Home() {
@@ -74,10 +77,43 @@ function Home() {
 
   return (
     <>
-      <HomeOffersSlider homeBanners={content?.homeBanners} />
-      <section className="hero">
+      <section className="hero hero-showcase">
+        <div className="hero-float-img hero-float-img-watch-1">
+          <img
+            src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400"
+            alt="Analog watch"
+            loading="lazy"
+          />
+        </div>
+        <div className="hero-float-img hero-float-img-watch-2">
+          <img
+            src="https://images.unsplash.com/photo-1508057198894-247b23fe5ade?w=400"
+            alt="Chronograph watch"
+            loading="lazy"
+          />
+        </div>
+        <div className="hero-float-img hero-float-img-eyewear-1">
+          <img
+            src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400"
+            alt="Aviator sunglasses"
+            loading="lazy"
+          />
+        </div>
+        <div className="hero-float-img hero-float-img-eyewear-2">
+          <img
+            src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400"
+            alt="Round frame glasses"
+            loading="lazy"
+          />
+        </div>
+
         <div className="container">
           <div className="hero-content">
+            <img
+              src={logoImage}
+              alt={content?.brand?.name || 'EYE10'}
+              className="hero-logo"
+            />
             <div className="hero-badge">{content?.hero?.badge}</div>
             <h1 className="hero-title">
               {content?.hero?.titlePrefix}{' '}
@@ -113,6 +149,57 @@ function Home() {
         </div>
       </section>
 
+      <BrandMarquee />
+
+
+      <section className="category-section">
+        <div className="container">
+          <div className="category-grid">
+            <Link to="/products?category=glasses" className="category-card">
+              <Glasses size={48} className="category-icon" />
+              <h3>Eyewear</h3>
+              <p>Glasses & sunglasses for every face and style</p>
+            </Link>
+            <Link to="/products?category=watches" className="category-card">
+              <Watch size={48} className="category-icon" />
+              <h3>Watches</h3>
+              <p>Analog, digital & mechanical watches for every wrist</p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <About />
+
+      <section className="features">
+        <div className="container">
+          <div className="section-header">
+            <h2>We Also Deal In</h2>
+          </div>
+          <div className="features-grid">
+            <div className="feature-card">
+              <Watch size={40} className="feature-icon" />
+              <h3>Watch Straps &amp; Batteries</h3>
+              <p>Genuine leather, metal &amp; PVC straps with original brand batteries.</p>
+            </div>
+            <div className="feature-card">
+              <Gift size={40} className="feature-icon" />
+              <h3>Corporate Gifting</h3>
+              <p>Curated eyewear and watch gifting solutions for your team or clients.</p>
+            </div>
+            <div className="feature-card">
+              <CreditCard size={40} className="feature-icon" />
+              <h3>Easy EMI Options</h3>
+              <p>Flexible EMI plans available on premium eyewear and watches.</p>
+            </div>
+            <div className="feature-card">
+              <Sparkles size={40} className="feature-icon" />
+              <h3>Lens Care &amp; Accessories</h3>
+              <p>Cleaning kits, cases, and accessories for your glasses and watches.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="featured-products">
         <div className="container">
@@ -137,6 +224,8 @@ function Home() {
           )}
         </div>
       </section>
+
+      <Services />
 
       <Brands />
 

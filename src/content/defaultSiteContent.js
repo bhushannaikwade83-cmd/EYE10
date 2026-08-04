@@ -1,7 +1,7 @@
 export const defaultSiteContent = {
   brand: {
     name: 'EYE10',
-    tagline: 'Premium Eyewear',
+    tagline: 'Premium Eyewear & Watches',
   },
   navbar: {
     phone: '+91 99999 99999',
@@ -16,24 +16,24 @@ export const defaultSiteContent = {
     googleMapsUrl: 'https://maps.app.goo.gl/rdbWifiseAVVfFm89',
   },
   hero: {
-    badge: 'Exclusive Eyewear Showroom',
-    titlePrefix: 'See the World',
-    titleHighlight: 'with Clearity',
+    badge: 'Exclusive Eyewear & Watch Showroom',
+    titlePrefix: 'See the World, Wear the Time',
+    titleHighlight: 'with EYE10',
     subtitle:
-      'Every pair of glasses represents who you are. Discover premium eyewear that combines style, comfort, and quality. Find your perfect pair at EYE10.',
+      'Every pair of glasses and every watch on your wrist represents who you are. Discover premium eyewear and watches that combine style, comfort, and quality. Find your perfect pair at EYE10.',
   },
   about: {
-    lead: 'Every pair of glasses represents who you are and how you see the world.',
+    lead: 'Every pair of glasses and every watch represents who you are and how you see the world.',
     descriptionOne:
-      "EYE10 is your trusted destination for premium eyewear. We combine style, comfort, and quality to help you see the world clearly. With years of experience serving customers, we understand that eyewear is not just a necessity-it's a statement of your personality.",
+      "EYE10 is your trusted destination for premium eyewear and watches. We combine style, comfort, and quality to help you see the world clearly and keep track of every moment in style. With years of experience serving customers, we understand that eyewear and watches aren't just accessories-they're a statement of your personality.",
   },
   cta: {
-    heading: 'Ready to Find Your Perfect Pair?',
-    subheading: 'Contact us for expert consultation and premium eyewear',
+    heading: 'Ready to Find Your Perfect Pair or Timepiece?',
+    subheading: 'Contact us for expert consultation on premium eyewear and watches',
   },
   footer: {
     description:
-      'Your trusted destination for premium eyewear. We combine style, comfort, and quality to help you see the world clearly.',
+      'Your trusted destination for premium eyewear and watches. We combine style, comfort, and quality to help you see the world clearly and stay on time in style.',
     phone: '+91 99999 99999',
     email: 'info@eye10.com',
     address: '123 Main Street, City, State - 123456, India',
@@ -59,15 +59,10 @@ export const defaultSiteContent = {
   catalogueItems: [],
   /** Up to 8 product IDs from `products` (shown on Home featured section). */
   featuredProductIds: [],
-  /**
-   * Up to 5 offer slides on Home (images or video). Set via Admin → Home banners.
-   * { id, mediaUrl, mediaType: 'image'|'video', storagePath?, title?, linkUrl? }
-   */
-  homeBanners: [],
   /** Products listing page title / subtitle (Admin → Website content). */
   productsPage: {
     title: 'Our Products',
-    subtitle: 'Discover our premium eyewear collection',
+    subtitle: 'Discover our premium eyewear and watch collection',
   },
   /** Home featured strip (Admin → Website content). */
   homeProducts: {
@@ -80,7 +75,7 @@ export const defaultSiteContent = {
    */
   brandsSection: {
     heading: 'Brands We Offer',
-    subtitle: "Premium eyewear from world's leading brands",
+    subtitle: "Premium eyewear and watches from world's leading brands",
     items: [],
   },
 }
@@ -133,9 +128,6 @@ export const mergeSiteContent = (remote = {}) => ({
   featuredProductIds: Array.isArray(remote.featuredProductIds)
     ? remote.featuredProductIds.filter(Boolean).slice(0, 8)
     : defaultSiteContent.featuredProductIds,
-  homeBanners: Array.isArray(remote.homeBanners)
-    ? remote.homeBanners.filter(Boolean).slice(0, 5)
-    : defaultSiteContent.homeBanners,
   productsPage: {
     ...defaultSiteContent.productsPage,
     ...(remote.productsPage || {}),

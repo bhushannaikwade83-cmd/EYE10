@@ -58,51 +58,13 @@ function ProductCard({ product }) {
             >
               <Eye size={20} />
             </Link>
-            <button
-              className="overlay-btn"
-              type="button"
-              onClick={() => addToComparison(product)}
-              title="Add to comparison"
-              aria-label="Add to comparison"
-            >
-              <GitCompare size={20} />
-            </button>
-            <button
-              className="overlay-btn"
-              type="button"
-              onClick={() => addPriceAlert(product)}
-              title="Set price alert"
-              aria-label="Set price drop alert"
-            >
-              <Bell size={20} />
-            </button>
           </div>
-
-          {product.discount && (
-            <span className="discount-badge">-{product.discount}%</span>
-          )}
-
-          {badges.length > 0 && (
-            <div className="product-badges">
-              {badges.map((badge, idx) => (
-                <span key={idx} className={`product-badge badge-${badge.type}`}>
-                  {badge.text}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
 
         <Link to={`/product/${product.id}`} className="product-link product-info-link">
           <div className="product-info">
             <h3 className="product-name">{product.name}</h3>
             <p className="product-brand">{product.brand || 'EYE10'}</p>
-            <div className="product-price">
-              {product.originalPrice && (
-                <span className="original-price">{'\u20B9'}{product.originalPrice}</span>
-              )}
-              <span className="current-price">{'\u20B9'}{product.price}</span>
-            </div>
           </div>
         </Link>
 

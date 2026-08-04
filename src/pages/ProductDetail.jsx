@@ -230,16 +230,6 @@ function ProductDetail() {
                 </div>
               )}
 
-              <div className="product-price-section">
-                {product.originalPrice && (
-                  <span className="original-price">₹{product.originalPrice}</span>
-                )}
-                <span className="current-price">₹{product.price}</span>
-                {product.discount && (
-                  <span className="discount">({product.discount}% OFF)</span>
-                )}
-              </div>
-
               {product.description ? (
                 <div className="product-description">
                   <h3>Description</h3>
