@@ -728,19 +728,36 @@
 
 @media (max-width: 480px) {
   .navbar {
-    padding: 10px 0;
-    padding-top: max(10px, env(safe-area-inset-top));
+    padding: 12px 16px;
+    padding-top: max(12px, env(safe-area-inset-top));
+  }
+
+  .nav-content {
+    gap: 16px;
+  }
+
+  .logo {
+    margin-left: -8px;
   }
 
   .logo-mark {
-    padding: 6px 16px 6px 10px;
+    padding: 8px 14px 8px 10px;
   }
 
   .logo-mark-line1 {
-    font-size: 15px;
+    font-size: 18px;
+    font-weight: 900;
   }
 
   .logo-mark-line2 {
+    display: none;
+  }
+
+  .search-bar {
+    display: none;
+  }
+
+  .nav-links {
     display: none;
   }
 }
