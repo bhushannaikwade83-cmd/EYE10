@@ -92,58 +92,40 @@
 
 .hero-logo {
   display: block;
-  width: 168px;
+  width: 230px;
   height: auto;
   object-fit: contain;
-  margin: 0 auto 32px;
+  margin: 0 auto 28px;
   position: relative;
   z-index: 2;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.18));
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
   animation: fadeInUp 0.8s ease-out 0.05s both, badgeFloat 4s ease-in-out infinite;
+  opacity: 1;
 }
 
+/* The site's 3D-theme CSS forces position:relative on every direct child
+   of .hero, which would turn this wrapper into an accidental containing
+   block (zero height, since its own children are all position:absolute).
+   Force it back to static so the float items anchor to .hero itself. */
+.hero-float-cluster {
+  position: static !important;
+}
+
+/* Free-floating product cutouts (transparent PNGs) — same "embedded, not
+   boxed" treatment as the hero logo: no card, no border, just a soft
+   grounding shadow. */
 .hero-float-img {
   position: absolute !important;
-  width: 210px;
-  height: 210px;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-  border: 4px solid var(--white);
   z-index: 1;
   justify-self: start;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.22));
 }
 
 .hero-float-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
+  width: 100%;
+  height: auto;
   animation: heroFloatImg 6s ease-in-out infinite;
-}
-
-.hero-float-img-watch-1 {
-  left: 3%;
-  top: 16%;
-  transform: rotate(-6deg);
-}
-
-.hero-float-img-watch-2 {
-  left: 3%;
-  top: 56%;
-  transform: rotate(5deg);
-}
-
-.hero-float-img-eyewear-1 {
-  right: 3%;
-  top: 16%;
-  transform: rotate(6deg);
-}
-
-.hero-float-img-eyewear-2 {
-  right: 3%;
-  top: 56%;
-  transform: rotate(-5deg);
 }
 
 .hero-float-img-watch-2 img,
@@ -160,9 +142,104 @@
   }
 }
 
-@media (max-width: 1279px) {
+/* Desktop (>=1280px): a single horizontal row, each item capped to the
+   same 100px height (width follows its own aspect ratio), sitting to the
+   left of the CTA buttons at the same height on the page. */
+/* All 4 at a shared 200px height, in one row, need ~1330px of clear width
+   (the two eyewear shots alone run ~1000px wide at that height, fixed by
+   their own aspect ratio). That only fits below the CTA buttons — not
+   beside them — and only from ~1500px viewport width up. */
+@media (min-width: 1500px) {
+  .hero.hero-showcase {
+    grid-template-rows: auto auto;
+  }
+
+  .hero .container {
+    order: 1;
+  }
+
+  .hero-float-cluster {
+    order: 2;
+    position: static;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    margin: 50px auto 0;
+    padding: 0 24px;
+  }
+
+  /* Same box for every item — watches (tall/narrow) and eyewear
+     (short/wide) otherwise render wildly different sizes if only height
+     is capped, since eyewear's aspect ratio is ~2.5x wider than tall. */
   .hero-float-img {
-    display: none;
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    width: 320px;
+    height: 320px;
+    transform: none !important;
+  }
+
+  .hero-float-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+/* Below 1500px: not enough room for one 200px-tall row, so wrap into a
+   non-overlapping grid beneath the CTA buttons instead. */
+@media (max-width: 1499.98px) {
+  .hero.hero-showcase {
+    grid-template-rows: auto auto;
+  }
+
+  .hero .container {
+    order: 1;
+  }
+
+  .hero-float-cluster {
+    order: 2;
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 28px 22px;
+    max-width: 420px;
+    margin: 80px auto 0;
+    padding: 0 24px;
+  }
+
+  .hero-float-img {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    width: 118px !important;
+    transform: none !important;
+  }
+
+  .hero-float-img-watch-1 { transform: rotate(-6deg) !important; }
+  .hero-float-img-watch-2 { transform: rotate(4deg) !important; }
+  .hero-float-img-eyewear-1 { transform: rotate(-4deg) !important; }
+  .hero-float-img-eyewear-2 { transform: rotate(6deg) !important; }
+}
+
+@media (max-width: 560px) {
+  .hero-float-cluster {
+    gap: 20px 16px;
+    max-width: 300px;
+  }
+
+  .hero-float-img {
+    width: 100px !important;
   }
 }
 

@@ -3,6 +3,8 @@
   padding: 42px 0;
   overflow: hidden;
   position: relative;
+  border-top: 1px solid rgb(var(--primary-rgb) / 0.35);
+  border-bottom: 1px solid rgb(var(--primary-rgb) / 0.35);
 }
 
 .brand-marquee::before,

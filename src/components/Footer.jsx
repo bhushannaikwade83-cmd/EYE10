@@ -1,9 +1,9 @@
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Youtube, Clock, FileDown } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import logoImage from '../assets/eye10-logo.png'
 import { useSiteContent } from '../context/SiteContentContext'
 import { getSitePhone, getSiteEmail, getSiteAddress, getStoreGoogleMapsUrl } from '../utils/siteContact'
-import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
+import { getCatalogueItems } from '../utils/catalogue'
 import { normalizeExternalUrl } from '../utils/socialLinks'
 import './Footer.css'
 
@@ -16,6 +16,8 @@ const FOOTER_SOCIAL = [
 
 function Footer() {
   const { content } = useSiteContent()
+  const navigate = useNavigate()
+  const location = useLocation()
   const footerPhone = getSitePhone(content)
   const footerEmail = getSiteEmail(content)
   const footerAddress = getSiteAddress(content)
@@ -23,6 +25,26 @@ function Footer() {
   const catalogueItems = getCatalogueItems(content)
   const socialLinks = content?.socialLinks || {}
   const hasSocialLinks = FOOTER_SOCIAL.some(({ key }) => normalizeExternalUrl(socialLinks[key]))
+
+  const goToCatalogues = (e) => {
+    e.preventDefault()
+    const scrollToBrands = (attempt = 0) => {
+      const el = document.getElementById('brands')
+      if (!el) {
+        if (attempt < 20) window.setTimeout(() => scrollToBrands(attempt + 1), 80)
+        return
+      }
+      const offset = 100
+      const top = el.getBoundingClientRect().top + window.pageYOffset - offset
+      window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' })
+    }
+    if (location.pathname !== '/') {
+      navigate('/')
+      window.setTimeout(() => scrollToBrands(0), 40)
+      return
+    }
+    scrollToBrands(0)
+  }
 
   return (
     <footer className="footer">
@@ -66,26 +88,14 @@ function Footer() {
               <li><Link to="/contact">Contact</Link></li>
               <li><Link to="/services">Services</Link></li>
               <li><Link to="/about">About Us</Link></li>
-              {catalogueItems.map((item) => {
-                const label = ((item.title || item.brandName || 'Catalogue').trim() || 'Catalogue') + ' (PDF)'
-                return (
-                  <li key={item.id}>
-                    <a
-                      href={item.pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="footer-catalogue-link"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        void openCataloguePdfInNewTabAndDownload(item)
-                      }}
-                    >
-                      <FileDown size={16} aria-hidden />
-                      {label}
-                    </a>
-                  </li>
-                )
-              })}
+              {catalogueItems.length > 0 ? (
+                <li>
+                  <a href="/#brands" className="footer-catalogue-link" onClick={goToCatalogues}>
+                    <FileDown size={16} aria-hidden />
+                    Catalogues
+                  </a>
+                </li>
+              ) : null}
             </ul>
           </div>
 

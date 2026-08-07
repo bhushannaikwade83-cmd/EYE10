@@ -161,8 +161,9 @@
   height: auto;
   display: block;
   margin-bottom: 10px;
-  border-radius: 10px;
-  filter: drop-shadow(0 6px 14px rgb(var(--primary-rgb) / 0.25));
+  /* The logo artwork is dark text on transparent — invisible on the dark
+     footer background, so flip it to light before applying the shadow. */
+  filter: brightness(0) invert(1) drop-shadow(0 6px 14px rgb(var(--primary-rgb) / 0.25));
   transition: all 0.3s ease;
 }
 
@@ -184,7 +185,7 @@
 
 .footer-logo:hover .footer-logo-image {
   transform: translateY(-2px) scale(1.03);
-  filter: drop-shadow(0 10px 20px rgb(var(--primary-rgb) / 0.35));
+  filter: brightness(0) invert(1) drop-shadow(0 10px 20px rgb(var(--primary-rgb) / 0.35));
 }
 
 .footer-description {

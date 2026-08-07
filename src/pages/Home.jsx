@@ -19,6 +19,10 @@ import { getSampleProducts } from '../utils/sampleProducts'
 import { useSiteContent } from '../context/SiteContentContext'
 import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
 import logoImage from '../assets/eye10-logo.png'
+import heroWatch1 from '../assets/watch1.png'
+import heroWatch2 from '../assets/watch2.png'
+import heroEyewear1 from '../assets/eyewear1.png'
+import heroEyewear2 from '../assets/eyewear2.png'
 import './Home.css'
 
 function Home() {
@@ -78,33 +82,19 @@ function Home() {
   return (
     <>
       <section className="hero hero-showcase">
-        <div className="hero-float-img hero-float-img-watch-1">
-          <img
-            src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=400"
-            alt="Analog watch"
-            loading="lazy"
-          />
-        </div>
-        <div className="hero-float-img hero-float-img-watch-2">
-          <img
-            src="https://images.unsplash.com/photo-1508057198894-247b23fe5ade?w=400"
-            alt="Chronograph watch"
-            loading="lazy"
-          />
-        </div>
-        <div className="hero-float-img hero-float-img-eyewear-1">
-          <img
-            src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400"
-            alt="Aviator sunglasses"
-            loading="lazy"
-          />
-        </div>
-        <div className="hero-float-img hero-float-img-eyewear-2">
-          <img
-            src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400"
-            alt="Round frame glasses"
-            loading="lazy"
-          />
+        <div className="hero-float-cluster">
+          <div className="hero-float-img hero-float-img-watch-1">
+            <img src={heroWatch1} alt="Analog watch" loading="eager" />
+          </div>
+          <div className="hero-float-img hero-float-img-watch-2">
+            <img src={heroWatch2} alt="Chronograph watch" loading="eager" />
+          </div>
+          <div className="hero-float-img hero-float-img-eyewear-1">
+            <img src={heroEyewear1} alt="Aviator sunglasses" loading="eager" />
+          </div>
+          <div className="hero-float-img hero-float-img-eyewear-2">
+            <img src={heroEyewear2} alt="Round frame glasses" loading="eager" />
+          </div>
         </div>
 
         <div className="container">

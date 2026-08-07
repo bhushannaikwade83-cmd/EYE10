@@ -4,6 +4,7 @@ import { defaultSiteContent } from '../content/defaultSiteContent'
 import { brandLogoFromName } from '../utils/productDoc'
 import { useSiteContent } from '../context/SiteContentContext'
 import { getCatalogueItemForBrand, getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
+import { getBrandFontStyle } from '../utils/brandFonts'
 import './Brands.css'
 
 function Brands() {
@@ -42,8 +43,8 @@ function Brands() {
           <div className="brands-grid">
             {brands.map((brand) => (
               <div key={brand.name} className="brand-card">
-                <div className="brand-logo">{brand.logo}</div>
-                <div className="brand-name">{brand.name}</div>
+                <div className="brand-logo" style={getBrandFontStyle(brand.name)}>{brand.logo}</div>
+                <div className="brand-name" style={getBrandFontStyle(brand.name)}>{brand.name}</div>
                 <button type="button" className="brand-download" onClick={() => openCatalogueForBrand(brand.name)}>
                   <Download size={16} aria-hidden />
                   Catalogue
