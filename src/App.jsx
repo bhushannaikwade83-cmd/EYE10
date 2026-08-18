@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
+import WhatsAppFloat from './components/WhatsAppFloat'
 import Breadcrumbs from './components/Breadcrumbs'
 import ProductComparison from './components/ProductComparison'
 import PrivacyConsent from './components/PrivacyConsent'
@@ -76,6 +77,7 @@ function AppChrome() {
       <PriceDropAlerts />
       <PrivacyConsent />
       <ScrollToTop />
+      <WhatsAppFloat />
       <Toaster
         position="top-right"
         toastOptions={{

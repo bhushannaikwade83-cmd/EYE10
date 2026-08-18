@@ -1,7 +1,7 @@
 export const defaultSiteContent = {
   brand: {
     name: 'EYE10',
-    tagline: 'Premium Eyewear & Watches',
+    tagline: 'Premium Eyewear & Opticals',
   },
   navbar: {
     phone: '+91 99999 99999',
@@ -16,24 +16,24 @@ export const defaultSiteContent = {
     googleMapsUrl: 'https://maps.app.goo.gl/rdbWifiseAVVfFm89',
   },
   hero: {
-    badge: 'Exclusive Eyewear & Watch Showroom',
-    titlePrefix: 'See the World, Wear the Time',
+    badge: 'Exclusive Eyewear Showroom',
+    titlePrefix: 'See the World Clearly',
     titleHighlight: 'with EYE10',
     subtitle:
-      'Every pair of glasses and every watch on your wrist represents who you are. Discover premium eyewear and watches that combine style, comfort, and quality. Find your perfect pair at EYE10.',
+      'Every pair of glasses represents who you are. Discover premium eyewear that combines style, comfort, and quality. Find your perfect pair at EYE10.',
   },
   about: {
-    lead: 'Every pair of glasses and every watch represents who you are and how you see the world.',
+    lead: 'Every pair of glasses represents who you are and how you see the world.',
     descriptionOne:
-      "EYE10 is your trusted destination for premium eyewear and watches. We combine style, comfort, and quality to help you see the world clearly and keep track of every moment in style. With years of experience serving customers, we understand that eyewear and watches aren't just accessories-they're a statement of your personality.",
+      "EYE10 is your trusted destination for premium eyewear. We combine style, comfort, and quality to help you see the world clearly. With years of experience serving customers, we understand that eyewear isn't just an accessory-it's a statement of your personality.",
   },
   cta: {
-    heading: 'Ready to Find Your Perfect Pair or Timepiece?',
-    subheading: 'Contact us for expert consultation on premium eyewear and watches',
+    heading: 'Ready to Find Your Perfect Pair?',
+    subheading: 'Contact us for expert consultation on premium eyewear',
   },
   footer: {
     description:
-      'Your trusted destination for premium eyewear and watches. We combine style, comfort, and quality to help you see the world clearly and stay on time in style.',
+      'Your trusted destination for premium eyewear. We combine style, comfort, and quality to help you see the world clearly.',
     phone: '+91 99999 99999',
     email: 'info@eye10.com',
     address: '123 Main Street, City, State - 123456, India',
@@ -62,7 +62,7 @@ export const defaultSiteContent = {
   /** Products listing page title / subtitle (Admin → Website content). */
   productsPage: {
     title: 'Our Products',
-    subtitle: 'Discover our premium eyewear and watch collection',
+    subtitle: 'Discover our premium eyewear collection',
   },
   /** Home featured strip (Admin → Website content). */
   homeProducts: {
@@ -75,7 +75,7 @@ export const defaultSiteContent = {
    */
   brandsSection: {
     heading: 'Brands We Offer',
-    subtitle: "Premium eyewear and watches from world's leading brands",
+    subtitle: "Premium eyewear from world's leading brands",
     items: [],
   },
 }

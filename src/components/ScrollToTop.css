@@ -16,7 +16,7 @@
     0 8px 24px rgb(var(--primary-rgb) / 0.34),
     0 0 20px rgb(var(--primary-rgb) / 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  z-index: 999;
+  z-index: 2001;
   opacity: 0;
   transform: translateY(20px) scale(0.8);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -30,17 +30,16 @@
 }
 
 .scroll-to-top:hover {
-  transform: translateY(-8px) scale(1.1);
-  box-shadow: 
+  transform: scale(1.1);
+  box-shadow:
     0 12px 32px rgb(var(--primary-rgb) / 0.45),
     0 0 30px rgb(var(--primary-rgb) / 0.35),
     inset 0 2px 0 rgba(255, 255, 255, 0.3);
   background: var(--gradient-primary-reverse);
-  animation: bounce-in 0.6s ease-out;
 }
 
 .scroll-to-top:active {
-  transform: translateY(-4px) scale(1.05);
+  transform: scale(1.05);
 }
 
 .scroll-to-top svg {

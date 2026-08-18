@@ -1,4 +1,4 @@
-import { Eye, Sparkles, Frame, Battery, Watch, Gem } from 'lucide-react'
+import { Eye, Sparkles, Frame } from 'lucide-react'
 import './Services.css'
 
 function Services() {
@@ -24,27 +24,6 @@ function Services() {
       description: 'High-quality lens replacement with options: prescription lenses, anti-glare coating, blue light filter, and progressive lenses.',
       color: '#f59e0b',
     },
-    {
-      id: 4,
-      icon: Battery,
-      title: 'Watch Battery Replacement',
-      description: 'Genuine batteries fitted in minutes for all leading watch brands, with a quick clean and check included.',
-      color: '#10b981',
-    },
-    {
-      id: 5,
-      icon: Watch,
-      title: 'Strap & Glass Replacement',
-      description: 'Genuine leather, metal, and PVC straps, plus watch glass replacement for scratched or cracked crystals.',
-      color: '#c56a3a',
-    },
-    {
-      id: 6,
-      icon: Gem,
-      title: 'Mechanical Watch Repair',
-      description: 'Trained, specialized technicians for automatic and mechanical watch servicing and repair.',
-      color: '#14b8a6',
-    },
   ]
 
   return (
@@ -52,7 +31,7 @@ function Services() {
       <div className="container">
         <div className="section-header">
           <h2>Authorized Service Centre</h2>
-          <p className="section-subtitle">Expert eyewear and watch services for all leading brands</p>
+          <p className="section-subtitle">Expert eyewear services for all leading brands</p>
         </div>
 
         <div className="services-grid">

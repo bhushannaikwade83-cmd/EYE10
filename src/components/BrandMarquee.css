@@ -33,7 +33,7 @@
   align-items: center;
   gap: 88px;
   width: max-content;
-  animation: brandMarqueeScroll 32s linear infinite;
+  animation: brandMarqueeScroll 10.67s linear infinite;
 }
 
 .brand-marquee-item {

@@ -25,9 +25,9 @@ function About() {
             <p className="about-lead">{content?.about?.lead}</p>
             <p className="about-description">{content?.about?.descriptionOne}</p>
             <p className="about-description">
-              We offer authentic eyewear and watches from leading brands, expert consultation,
+              We offer authentic eyewear from leading brands, expert consultation,
               and comprehensive after-sales service. Our team is dedicated to helping
-              you find the perfect pair or timepiece that matches your style and needs.
+              you find the perfect pair that matches your style and needs.
             </p>
             <div className="about-features">
               <div className="feature-item">
@@ -44,7 +44,7 @@ function About() {
               </div>
               <div className="feature-item">
                 <span className="feature-check">+</span>
-                <span>Watch &amp; Eyewear Repair Service</span>
+                <span>Eyewear Repair Service</span>
               </div>
             </div>
           </div>

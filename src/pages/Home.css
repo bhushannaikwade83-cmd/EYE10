@@ -1,11 +1,11 @@
 .hero {
   background: var(--gradient-hero);
   color: var(--white);
-  padding: 130px 0 80px;
+  padding: 34px 0 0;
   text-align: center;
   position: relative;
   overflow: hidden;
-  min-height: 90vh;
+  min-height: 50vh;
   display: grid;
   align-items: center;
   isolation: isolate;
@@ -92,10 +92,10 @@
 
 .hero-logo {
   display: block;
-  width: 230px;
+  width: 200px;
   height: auto;
   object-fit: contain;
-  margin: 0 auto 28px;
+  margin: 0 auto 4px;
   position: relative;
   z-index: 2;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
@@ -128,7 +128,6 @@
   animation: heroFloatImg 6s ease-in-out infinite;
 }
 
-.hero-float-img-watch-2 img,
 .hero-float-img-eyewear-2 img {
   animation-delay: 0.6s;
 }
@@ -167,21 +166,19 @@
     align-items: center;
     gap: 20px;
     width: 100%;
-    margin: 50px auto 0;
+    margin: 20px auto 0;
     padding: 0 24px;
   }
 
-  /* Same box for every item — watches (tall/narrow) and eyewear
-     (short/wide) otherwise render wildly different sizes if only height
-     is capped, since eyewear's aspect ratio is ~2.5x wider than tall. */
+  /* Same box for every item, so eyewear shots render consistent sizes. */
   .hero-float-img {
     position: static !important;
     left: auto !important;
     right: auto !important;
     top: auto !important;
     bottom: auto !important;
-    width: 320px;
-    height: 320px;
+    width: 380px;
+    height: 380px;
     transform: none !important;
   }
 
@@ -207,13 +204,13 @@
     order: 2;
     position: static;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
-    align-items: flex-end;
-    gap: 28px 22px;
-    max-width: 420px;
-    margin: 80px auto 0;
-    padding: 0 24px;
+    align-items: center;
+    gap: 24px;
+    width: 100%;
+    margin: 0 auto 0;
+    padding: 0 16px;
   }
 
   .hero-float-img {
@@ -222,24 +219,30 @@
     right: auto !important;
     top: auto !important;
     bottom: auto !important;
-    width: 118px !important;
+    width: 190px !important;
+    height: 190px !important;
     transform: none !important;
   }
 
-  .hero-float-img-watch-1 { transform: rotate(-6deg) !important; }
-  .hero-float-img-watch-2 { transform: rotate(4deg) !important; }
+  .hero-float-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
   .hero-float-img-eyewear-1 { transform: rotate(-4deg) !important; }
   .hero-float-img-eyewear-2 { transform: rotate(6deg) !important; }
 }
 
 @media (max-width: 560px) {
   .hero-float-cluster {
-    gap: 20px 16px;
-    max-width: 300px;
+    gap: 14px;
+    padding: 0 10px;
   }
 
   .hero-float-img {
-    width: 100px !important;
+    width: 165px !important;
+    height: 165px !important;
   }
 }
 
@@ -256,7 +259,7 @@
   font-weight: 900;
   letter-spacing: 5px;
   text-transform: uppercase;
-  margin-bottom: 56px;
+  margin-bottom: 8px;
   animation: fadeInUp 0.8s ease-out 0.1s both, glow 2s ease-in-out infinite, badgeFloat 3s ease-in-out infinite, badgeShine 3s ease-in-out infinite;
   color: var(--dark-light);
   box-shadow: 
@@ -346,7 +349,7 @@
 .hero-title {
   font-size: clamp(52px, 9vw, 108px);
   font-weight: 900;
-  margin-bottom: 48px;
+  margin-bottom: 8px;
   line-height: 1.15;
   letter-spacing: -3px;
   text-shadow:
@@ -836,7 +839,7 @@
   letter-spacing: -2.5px;
   position: relative;
   padding-bottom: 24px;
-  font-family: 'Playfair Display', 'Montserrat', serif;
+  font-family: 'Montserrat', 'Poppins', sans-serif;
   line-height: 1.15;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
@@ -1033,7 +1036,7 @@
   margin-bottom: 32px;
   font-weight: 900;
   letter-spacing: -3px;
-  font-family: 'Playfair Display', 'Montserrat', serif;
+  font-family: 'Montserrat', 'Poppins', sans-serif;
   line-height: 1.1;
   color: #fffdf7;
   -webkit-text-fill-color: #fffdf7;

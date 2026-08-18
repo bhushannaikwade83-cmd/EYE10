@@ -155,7 +155,7 @@ function ProductFilters({ products, onFilterChange, onSortChange, onViewChange, 
             <Search className="search-icon" size={20} />
             <input
               type="text"
-              placeholder="Search eyewear & watches"
+              placeholder="Search eyewear"
               value={searchTerm}
               onChange={handleSearch}
               className="search-input"

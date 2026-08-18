@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Search, Phone } from 'lucide-react'
+import { Menu, X, Search, Phone, PhoneCall } from 'lucide-react'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 import { getSitePhone, getSiteWhatsAppDigits } from '../utils/siteContact'
 import { useSiteContent } from '../context/SiteContentContext'
@@ -83,15 +83,15 @@ function Navbar() {
         <div className="nav-content">
           <Link to="/" className="logo">
             <span className="logo-mark">
-              <span className="logo-mark-line1">{content?.brand?.name || 'EYE10'}</span>
-              <span className="logo-mark-line2">Eyewear &amp; Watches</span>
+              <span className="logo-mark-line1">EYe10</span>
+              <span className="logo-mark-line2">Eyewear &amp; Opticals</span>
             </span>
           </Link>
 
           <form onSubmit={handleSearch} className="search-bar">
             <input
               type="text"
-              placeholder="Search eyewear & watches"
+              placeholder="Search eyewear"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -124,15 +124,25 @@ function Navbar() {
             </a>
           </div>
 
-          <button 
-            className={`menu-toggle ${menuOpen ? 'active' : ''}`} 
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            <span className="menu-icon-wrapper">
-              <Menu size={24} className="menu-icon" />
-              <X size={24} className="close-icon" />
-            </span>
-          </button>
+          <div className="nav-mobile-actions">
+            <a
+              href={`tel:${navbarPhone.replace(/\s+/g, '')}`}
+              className="mobile-call-btn"
+              aria-label={`Call ${navbarPhone}`}
+            >
+              <PhoneCall size={20} />
+            </a>
+
+            <button
+              className={`menu-toggle ${menuOpen ? 'active' : ''}`}
+              onClick={() => setMenuOpen(!menuOpen)}
+            >
+              <span className="menu-icon-wrapper">
+                <Menu size={24} className="menu-icon" />
+                <X size={24} className="close-icon" />
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
@@ -146,7 +156,7 @@ function Navbar() {
             <input
               type="search"
               enterKeyHint="search"
-              placeholder="Search eyewear & watches"
+              placeholder="Search eyewear"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="mobile-search-input"

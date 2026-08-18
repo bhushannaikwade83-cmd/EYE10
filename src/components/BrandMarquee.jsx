@@ -6,7 +6,7 @@ import './BrandMarquee.css'
 
 // Shown before any catalogues exist yet, so the section isn't empty on a fresh install.
 const PLACEHOLDER_NAMES = [
-  'Titan', 'Fossil', 'Casio', 'Fastrack', 'Ray-Ban', 'Oakley', 'Gucci', 'Prada', 'Versace',
+  'Ray-Ban', 'Oakley', 'Gucci', 'Prada', 'Versace',
 ]
 
 function BrandMarquee() {

@@ -157,50 +157,14 @@ function Footer() {
         <div className="footer-bottom">
           <p className="footer-copyright">&copy; {new Date().getFullYear()} EYE10. All rights reserved.</p>
 
-          <div className="footer-credits-zone">
-            <span className="footer-credits-zone__orb footer-credits-zone__orb--a" aria-hidden />
-            <span className="footer-credits-zone__orb footer-credits-zone__orb--b" aria-hidden />
-            <span className="footer-credits-zone__shine" aria-hidden />
-            <div className="footer-credits" aria-label="Website credits">
-              <p className="footer-credits__intro">Designed with love for premium eyewear</p>
-              <div className="footer-credits__grid">
-                <article className="footer-credits-card">
-                  <h3 className="footer-credits-card__name">Vedant Kapse</h3>
-                  <p className="footer-credits-card__meta">
-                    <span className="footer-credits-card__label">Contact</span>
-                    <a
-                      href="tel:+917208324505"
-                      className="footer-credits-card__tel"
-                      aria-label="Call Vedant Kapse at 7208324505"
-                    >
-                      72083 24505
-                    </a>
-                  </p>
-                  <p className="footer-credits-card__meta">
-                    <span className="footer-credits-card__label">Email</span>
-                    <a href="mailto:vedantkapse901@gmail.com">vedantkapse901@gmail.com</a>
-                  </p>
-                </article>
-                <article className="footer-credits-card">
-                  <h3 className="footer-credits-card__name">Bhushan Naikwade</h3>
-                  <p className="footer-credits-card__meta">
-                    <span className="footer-credits-card__label">Contact</span>
-                    <a
-                      href="tel:+919773609077"
-                      className="footer-credits-card__tel"
-                      aria-label="Call Bhushan Naikwade at 9773609077"
-                    >
-                      97736 09077
-                    </a>
-                  </p>
-                  <p className="footer-credits-card__meta">
-                    <span className="footer-credits-card__label">Email</span>
-                    <a href="mailto:digitrixmedia05@gmail.com">digitrixmedia05@gmail.com</a>
-                  </p>
-                </article>
-              </div>
-            </div>
-          </div>
+          <sub className="footer-credits-subtle" aria-label="Website credits">
+            <span className="footer-credits-subtle__line">
+              Designed by Vedant Kapse (<a href="tel:+918369813323">+91 8369813323</a>, <a href="mailto:gskcoretech@gmail.com">gskcoretech@gmail.com</a>)
+            </span>
+            <span className="footer-credits-subtle__line">
+              Bhushan Naikwade (<a href="tel:+919773609077">+91 9773609077</a>, <a href="mailto:digitrixmedia05@gmail.com">digitrixmedia05@gmail.com</a>)
+            </span>
+          </sub>
         </div>
       </div>
     </footer>

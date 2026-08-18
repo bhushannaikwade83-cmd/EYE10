@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, FileText, Glasses, Watch, Gift, CreditCard, Sparkles } from 'lucide-react'
+import { ArrowRight, Glasses, Gift, CreditCard, Sparkles } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../supabase/client'
 import ProductCard from '../components/ProductCard'
@@ -17,10 +17,7 @@ import { buildWhatsAppUrl } from '../utils/whatsapp'
 import { getSiteWhatsAppDigits } from '../utils/siteContact'
 import { getSampleProducts } from '../utils/sampleProducts'
 import { useSiteContent } from '../context/SiteContentContext'
-import { getCatalogueItems, openCataloguePdfInNewTabAndDownload } from '../utils/catalogue'
 import logoImage from '../assets/eye10-logo.png'
-import heroWatch1 from '../assets/watch1.png'
-import heroWatch2 from '../assets/watch2.png'
 import heroEyewear1 from '../assets/eyewear1.png'
 import heroEyewear2 from '../assets/eyewear2.png'
 import './Home.css'
@@ -31,8 +28,6 @@ function Home() {
   const { content } = useSiteContent()
   const whatsappUrl = buildWhatsAppUrl(getSiteWhatsAppDigits(content))
   const featuredIdsKey = (content?.featuredProductIds || []).filter(Boolean).join(',')
-  const catalogueItems = getCatalogueItems(content)
-  const primaryCatalogue = catalogueItems[0]
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -83,12 +78,6 @@ function Home() {
     <>
       <section className="hero hero-showcase">
         <div className="hero-float-cluster">
-          <div className="hero-float-img hero-float-img-watch-1">
-            <img src={heroWatch1} alt="Analog watch" loading="eager" />
-          </div>
-          <div className="hero-float-img hero-float-img-watch-2">
-            <img src={heroWatch2} alt="Chronograph watch" loading="eager" />
-          </div>
           <div className="hero-float-img hero-float-img-eyewear-1">
             <img src={heroEyewear1} alt="Aviator sunglasses" loading="eager" />
           </div>
@@ -109,38 +98,11 @@ function Home() {
               {content?.hero?.titlePrefix}{' '}
               <span className="highlight">{content?.hero?.titleHighlight}</span>
             </h1>
-            <p className="hero-subtitle">
-              {content?.hero?.subtitle}
-            </p>
-            <div className="hero-buttons">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary"
-              >
-                Enquire Now <ArrowRight size={20} />
-              </a>
-              <Link to="/products" className="btn btn-outline">
-                Browse Products
-              </Link>
-              {primaryCatalogue ? (
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => void openCataloguePdfInNewTabAndDownload(primaryCatalogue)}
-                >
-                  <FileText size={20} aria-hidden />
-                  {(primaryCatalogue.title || primaryCatalogue.brandName || 'Catalogue').trim() || 'Catalogue'}
-                </button>
-              ) : null}
-            </div>
           </div>
         </div>
       </section>
 
       <BrandMarquee />
-
 
       <section className="category-section">
         <div className="container">
@@ -149,11 +111,6 @@ function Home() {
               <Glasses size={48} className="category-icon" />
               <h3>Eyewear</h3>
               <p>Glasses & sunglasses for every face and style</p>
-            </Link>
-            <Link to="/products?category=watches" className="category-card">
-              <Watch size={48} className="category-icon" />
-              <h3>Watches</h3>
-              <p>Analog, digital & mechanical watches for every wrist</p>
             </Link>
           </div>
         </div>
@@ -168,24 +125,19 @@ function Home() {
           </div>
           <div className="features-grid">
             <div className="feature-card">
-              <Watch size={40} className="feature-icon" />
-              <h3>Watch Straps &amp; Batteries</h3>
-              <p>Genuine leather, metal &amp; PVC straps with original brand batteries.</p>
-            </div>
-            <div className="feature-card">
               <Gift size={40} className="feature-icon" />
               <h3>Corporate Gifting</h3>
-              <p>Curated eyewear and watch gifting solutions for your team or clients.</p>
+              <p>Curated eyewear gifting solutions for your team or clients.</p>
             </div>
             <div className="feature-card">
               <CreditCard size={40} className="feature-icon" />
               <h3>Easy EMI Options</h3>
-              <p>Flexible EMI plans available on premium eyewear and watches.</p>
+              <p>Flexible EMI plans available on premium eyewear.</p>
             </div>
             <div className="feature-card">
               <Sparkles size={40} className="feature-icon" />
               <h3>Lens Care &amp; Accessories</h3>
-              <p>Cleaning kits, cases, and accessories for your glasses and watches.</p>
+              <p>Cleaning kits, cases, and accessories for your glasses.</p>
             </div>
           </div>
         </div>

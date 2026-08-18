@@ -106,7 +106,7 @@
   justify-content: center;
   background: var(--white);
   padding: 14px 34px 14px 20px;
-  clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 26px) 100%, 0 100%);
   line-height: 1.15;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   transition: filter 0.25s ease, transform 0.2s ease;
@@ -115,7 +115,7 @@
 }
 
 .logo-mark-line1 {
-  font-family: 'Playfair Display', 'Montserrat', serif;
+  font-family: 'Poppins', 'Montserrat', sans-serif;
   font-size: 26px;
   font-weight: 900;
   letter-spacing: 1px;
@@ -418,6 +418,36 @@
   }
 }
 
+.nav-mobile-actions {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.mobile-call-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: var(--white);
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgb(var(--primary-rgb) / 0.3);
+  transition: all 0.3s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-call-btn:hover,
+.mobile-call-btn:active {
+  transform: scale(1.08);
+  box-shadow: 0 8px 20px rgb(var(--primary-rgb) / 0.4);
+}
+
 .menu-toggle {
   display: none;
   background: none;
@@ -658,6 +688,14 @@
     display: none;
   }
 
+  .nav-mobile-actions {
+    display: flex;
+  }
+
+  .mobile-call-btn {
+    display: flex;
+  }
+
   .menu-toggle {
     display: flex;
   }
@@ -689,15 +727,15 @@
   }
 
   .logo-mark {
-    padding: 8px 20px 8px 12px;
+    padding: 10px 32px 10px 14px;
   }
 
   .logo-mark-line1 {
-    font-size: 17px;
+    font-size: 19px;
   }
 
   .logo-mark-line2 {
-    font-size: 7px;
+    font-size: 9px;
   }
 
   .search-bar {
@@ -741,16 +779,16 @@
   }
 
   .logo-mark {
-    padding: 8px 14px 8px 10px;
+    padding: 10px 30px 10px 12px;
   }
 
   .logo-mark-line1 {
-    font-size: 18px;
+    font-size: 21px;
     font-weight: 900;
   }
 
   .logo-mark-line2 {
-    display: none;
+    font-size: 9.5px;
   }
 
   .search-bar {
